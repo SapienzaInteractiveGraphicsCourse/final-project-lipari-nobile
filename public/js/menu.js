@@ -31,7 +31,7 @@ let pointerXOnPointerDown = 0;
 let windowHalfX = window.innerWidth / 2;
 let raycaster;
 let mouse;
-let sound;
+let sound, listener;
 
 init();
 animate();
@@ -87,20 +87,17 @@ function init() {
     mouse = new THREE.Vector2(1,1);
 
     /* Audio */
-    const listener = new THREE.AudioListener();
+    listener = new THREE.AudioListener();
     camera.add(listener);
 
-    // create a global audio source
+    // create an Ambient audio source
     sound = new THREE.Audio(listener);
 
-    // load a sound and set it as the Audio object's buffer
-    const audioLoader = new THREE.AudioLoader();
-    audioLoader.load('../sounds/BOX_15.mp3', function(buffer) {
-        sound.setBuffer(buffer);
-        sound.setLoop(true);
-        sound.setVolume(0.5);
-        sound.play()
-    });
+    const songElement = document.getElementById('song')
+    sound.setMediaElementSource(songElement);
+    sound.setFilter( listener.context.createWaveShaper() );
+    sound.setLoop(true);
+    songElement.play();
 
 	const pointLight = new THREE.PointLight( 0xffffff, 4.5, 0, 0 );
 	pointLight.color.setHSL( Math.random(), 1, 0.5 );
@@ -143,11 +140,24 @@ function init() {
 		}
 	};
 
-	const gui = new GUI();
-	gui.add( params, 'changeColor' ).name( 'change color' );
-	gui.add( params, 'changeBevel' ).name( 'change bevel' );
-	//gui.open();
+    const SoundControls = function () {
+        this.master = listener.getMasterVolume();
+    };
 
+
+	const gui = new GUI();
+    const textFolder = gui.addFolder( 'Text' );
+    const soundControls = new SoundControls();
+    const volumeFolder = gui.addFolder('Volume');
+
+    textFolder.add( params, 'changeBevel' ).name( 'change bevel' );
+    textFolder.add(params, 'changeColor').name('change color');
+    
+    volumeFolder.add( soundControls, 'master' ).min( 0.0 ).max( 1.0 ).step( 0.01 ).onChange( function () {
+
+        listener.setMasterVolume( soundControls.master );
+
+    } );
 }
 
 function onWindowResize() {
@@ -256,15 +266,12 @@ function onPointerUp(event) {
         setup();
 
         // Stop the sound
-        //sound.stop();
+        sound.stop();
 
         // Close the GUI
-        gui.toggleHide()
-
         console.log('start game')
     }
     if(firstIntersect.object.name === 'option') {
-
         // Close the credits if it's open
         if(credits.style.bottom == `0px`){
             credits.style.bottom = `-${creditsHeight}px`;
@@ -369,9 +376,14 @@ function startAnimationChangeText(){
     })
 };  
 
-function onClickHandler(event) {
-    console.log('click')
-}
+/* Event listener to change master volume */
+document.getElementById('volume').addEventListener('input', (event) => {
+    console.log(event)
+    const volume = event.target.value / 100;
+    console.log(volume)
+    sound.setVolume(volume);
+    listener.setMasterVolume(volume);
+})
 
 function animate() {
     sound.setVolume(0.1)
