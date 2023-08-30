@@ -1,13 +1,21 @@
 import * as THREE from 'three';
-import { FontLoader } from 'three/addons/loaders/FontLoader.js';
-import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
-import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
-import { setup } from './game.js'
+import {
+    FontLoader
+} from 'three/addons/loaders/FontLoader.js';
+import {
+    TextGeometry
+} from 'three/addons/geometries/TextGeometry.js';
+import {
+    GUI
+} from 'three/addons/libs/lil-gui.module.min.js';
+import {
+    setup
+} from './game.js'
 
 /* Variables */
 let container; // canvas
-let options, credits, menuContainer; 
-let camera, cameraTarget, scene, renderer; 
+let options, credits, menuContainer;
+let camera, cameraTarget, scene, renderer;
 let group, textStartGeo, textStartMesh, textOptionGeo, textOptionMesh, textCreditsGeo, textCreditsMesh, materials; // group, text, textMesh, textGeo, materials
 let textStart = 'Start game',
     textOption = 'Options',
@@ -17,11 +25,11 @@ let textStart = 'Start game',
     fontName = 'optimer', // helvetiker, optimer, gentilis, droid sans, droid serif
     fontWeight = 'bold'; // normal bold
 const height = 10,
-	size = 30,
-	hover = 15,
+    size = 30,
+    hover = 15,
     curveSegments = 4,
     bevelThickness = 1,
-	bevelSize = 1.5;
+    bevelSize = 1.5;
 
 let targetRotation = 0;
 let targetRotationOnPointerDown = 0;
@@ -39,7 +47,13 @@ animate();
 
 class Button extends THREE.Mesh {
     #isClicked = false;
-    constructor({name, textMesh, geometry, positionY, positionX}){
+    constructor({
+        name,
+        textMesh,
+        geometry,
+        positionY,
+        positionX
+    }) {
         super(textMesh, geometry);
         this.name = name;
         this.position.set(positionX, positionY, 0);
@@ -52,39 +66,48 @@ class Button extends THREE.Mesh {
     set isClicked(value) {
         this.#isClicked = value;
     }
-
 }
 
 class Text extends TextGeometry {
-    constructor({text}){
-        super(text, {font, size, height, curveSegments, bevelThickness, bevelSize, bevelEnabled});
+    constructor({
+        text
+    }) {
+        super(text, {
+            font,
+            size,
+            height,
+            curveSegments,
+            bevelThickness,
+            bevelSize,
+            bevelEnabled
+        });
     }
 }
 
 function init() {
 
-	container = document.getElementById( 'menuCanvas' );
+    container = document.getElementById('menuCanvas');
     options = document.getElementById('options')
     credits = document.getElementById('credits')
     menuContainer = document.getElementById('menuContainer')
 
-	/* Camera */
-	camera = new THREE.PerspectiveCamera( 35, container.clientWidth / container.clientHeight, 0.1, 2000 );
-	camera.position.set( 0, 100, 500 );
-	cameraTarget = new THREE.Vector3( 0, 40, 0 );
+    /* Camera */
+    camera = new THREE.PerspectiveCamera(35, container.clientWidth / container.clientHeight, 0.1, 2000);
+    camera.position.set(0, 100, 500);
+    cameraTarget = new THREE.Vector3(0, 40, 0);
 
-	/* SCENE */
+    /* SCENE */
     scene = new THREE.Scene();
-	scene.fog = new THREE.Fog( 0x000000, 250, 1400 );
-    
+    scene.fog = new THREE.Fog(0x000000, 250, 1400);
+
     /* LIGHTS */
-	const dirLight = new THREE.DirectionalLight( 0xffffff, 0.4 );
-	dirLight.position.set( 0, 0, 1 ).normalize();
-	scene.add( dirLight );
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.4);
+    dirLight.position.set(0, 0, 1).normalize();
+    scene.add(dirLight);
 
     /* Raycaster */
     raycaster = new THREE.Raycaster();
-    mouse = new THREE.Vector2(1,1);
+    mouse = new THREE.Vector2(1, 1);
 
     /* Audio */
     const listener = new THREE.AudioListener();
@@ -95,146 +118,183 @@ function init() {
 
     // load a sound and set it as the Audio object's buffer
     const audioLoader = new THREE.AudioLoader();
-    audioLoader.load('../sounds/BOX_15.mp3', function(buffer) {
-        sound.setBuffer(buffer);
-        sound.setLoop(true);
-        sound.setVolume(0.5);
-        sound.play()
-    });
+    console.log("load sound")
+    audioLoader.loadAsync('../sounds/BOX_15.mp3')
+        .then(buffer => {
+            console.log("sound loaded")
+            sound.setBuffer(buffer);
+            sound.setLoop(true);
+            sound.setVolume(0.5);
+            sound.play()
+        }).catch(err => {
+            console.log(err);
+        })
 
-	const pointLight = new THREE.PointLight( 0xffffff, 4.5, 0, 0 );
-	pointLight.color.setHSL( Math.random(), 1, 0.5 );
-	pointLight.position.set( 0, 100, 90 );
-	scene.add( pointLight );
+    const pointLight = new THREE.PointLight(0xffffff, 4.5, 0, 0);
+    pointLight.color.setHSL(Math.random(), 1, 0.5);
+    pointLight.position.set(0, 100, 90);
+    scene.add(pointLight);
 
-	materials = [
-		new THREE.MeshPhongMaterial( { color: 0xffffff, flatShading: true } ), // front
-		new THREE.MeshPhongMaterial( { color: 0xffffff } ) // side
-	];
+    materials = [
+        new THREE.MeshPhongMaterial({
+            color: 0xffffff,
+            flatShading: true
+        }), // front
+        new THREE.MeshPhongMaterial({
+            color: 0xffffff
+        }) // side
+    ];
 
     /* Group */
-	group = new THREE.Group();
-	group.position.y = 100;
+    group = new THREE.Group();
+    group.position.y = 100;
 
-	scene.add( group );
+    scene.add(group);
 
-	loadFont();
+    loadFont();
 
-	/* RENDERER */
-	renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } ); // alpha turn background transparent
-    renderer.setPixelRatio( window.devicePixelRatio );
-	renderer.setSize( container.clientWidth , container.clientHeight );
-	container.appendChild( renderer.domElement );
+    /* RENDERER */
+    renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true
+    }); // alpha turn background transparent
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(renderer.domElement);
 
-	/* EVENTS */
-	container.style.touchAction = 'none';
-	container.addEventListener( 'pointerdown', onPointerDown );
-    container.addEventListener( 'mousemove', onMoveMove );
-	window.addEventListener( 'resize', onWindowResize );
+    /* EVENTS */
+    container.style.touchAction = 'none';
+    container.addEventListener('pointerdown', onPointerDown);
+    container.addEventListener('mousemove', onMoveMove);
+    window.addEventListener('resize', onWindowResize);
 
     /* Menu GUI */
-	const params = {
-		changeColor: function () {
-			pointLight.color.setHSL( Math.random(), 1, 0.5 );
-		},
-		changeBevel: function () {
-            bevelEnabled = ! bevelEnabled;
-			refreshText();
-		}
-	};
+    const params = {
+        changeColor: function () {
+            pointLight.color.setHSL(Math.random(), 1, 0.5);
+        },
+        changeBevel: function () {
+            bevelEnabled = !bevelEnabled;
+            refreshText();
+        }
+    };
 
-	const gui = new GUI();
-	gui.add( params, 'changeColor' ).name( 'change color' );
-	gui.add( params, 'changeBevel' ).name( 'change bevel' );
-	//gui.open();
+    const gui = new GUI();
+    gui.add(params, 'changeColor').name('change color');
+    gui.add(params, 'changeBevel').name('change bevel');
+    //gui.open();
 
 }
 
 function onWindowResize() {
     console.log('resize')
-	windowHalfX = container.clientWidth / 2;
+    windowHalfX = container.clientWidth / 2;
 
-	camera.aspect = container.clientWidth / container.clientHeight;
-	camera.updateProjectionMatrix();
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
 
-	renderer.setSize( container.clientWidth, container.clientHeight );
+    renderer.setSize(container.clientWidth, container.clientHeight);
 
 }
 
 function loadFont() {
 
-	const loader = new FontLoader();
-	loader.load( '../fonts/Nunito.json', function ( response ) {
+    const loader = new FontLoader();
+    loader.load('../fonts/Nunito.json', function (response) {
 
-	font = response;
+        font = response;
 
-	refreshText();
+        refreshText();
 
-    } );
+    });
 }
 
 function createText() {
 
-    textStartGeo = new Text({ text: textStart})
+    textStartGeo = new Text({
+        text: textStart
+    })
 
-    textOptionGeo = new Text({text: textOption})
+    textOptionGeo = new Text({
+        text: textOption
+    })
 
-    textCreditsGeo = new Text({text: textCredits})
+    textCreditsGeo = new Text({
+        text: textCredits
+    })
 
-	textStartGeo.computeBoundingBox();
+    textStartGeo.computeBoundingBox();
     textOptionGeo.computeBoundingBox();
     textCreditsGeo.computeBoundingBox();
-	const centerOffset = - 0.5 * ( textStartGeo.boundingBox.max.x - textStartGeo.boundingBox.min.x );
-    const centerOptionOffset = - 0.5 * ( textOptionGeo.boundingBox.max.x - textOptionGeo.boundingBox.min.x );
-    const centerCreditsOffset = - 0.5 * ( textCreditsGeo.boundingBox.max.x - textCreditsGeo.boundingBox.min.x );
+    const centerOffset = -0.5 * (textStartGeo.boundingBox.max.x - textStartGeo.boundingBox.min.x);
+    const centerOptionOffset = -0.5 * (textOptionGeo.boundingBox.max.x - textOptionGeo.boundingBox.min.x);
+    const centerCreditsOffset = -0.5 * (textCreditsGeo.boundingBox.max.x - textCreditsGeo.boundingBox.min.x);
 
-    textStartMesh = new Button({name: 'start', textMesh: textStartGeo, geometry: materials, positionY: hover, positionX: centerOffset});
-	textStartMesh.rotation.y = Math.PI * 2;
-	group.add( textStartMesh );
+    textStartMesh = new Button({
+        name: 'start',
+        textMesh: textStartGeo,
+        geometry: materials,
+        positionY: hover,
+        positionX: centerOffset
+    });
+    textStartMesh.rotation.y = Math.PI * 2;
+    group.add(textStartMesh);
 
-    textOptionMesh = new Button({name: 'option', textMesh: textOptionGeo, geometry: materials, positionY: hover * -4, positionX: centerOptionOffset})
+    textOptionMesh = new Button({
+        name: 'option',
+        textMesh: textOptionGeo,
+        geometry: materials,
+        positionY: hover * -4,
+        positionX: centerOptionOffset
+    })
     group.add(textOptionMesh);
 
-    textCreditsMesh = new Button({name: 'credits', textMesh: textCreditsGeo, geometry: materials, positionY: hover * -9, positionX: centerCreditsOffset})
+    textCreditsMesh = new Button({
+        name: 'credits',
+        textMesh: textCreditsGeo,
+        geometry: materials,
+        positionY: hover * -9,
+        positionX: centerCreditsOffset
+    })
     group.add(textCreditsMesh);
 
 }
 
 function refreshText() {
-	group.remove( textStartMesh );
-    group.remove( textOptionMesh);
-    group.remove( textCreditsMesh)
+    group.remove(textStartMesh);
+    group.remove(textOptionMesh);
+    group.remove(textCreditsMesh)
 
-	if ( ! textStart ) return;
-	createText();
+    if (!textStart) return;
+    createText();
 }
 
-function onPointerDown( event ) {
+function onPointerDown(event) {
 
-	if ( event.isPrimary === false ) return;
+    if (event.isPrimary === false) return;
 
-	pointerXOnPointerDown = event.clientX - windowHalfX;
-	targetRotationOnPointerDown = targetRotation;
-	document.addEventListener( 'pointermove', onPointerMove );
-	document.addEventListener( 'pointerup', onPointerUp );
+    pointerXOnPointerDown = event.clientX - windowHalfX;
+    targetRotationOnPointerDown = targetRotation;
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp);
 }
 
-function onPointerMove( event ) {
-	if ( event.isPrimary === false ) return;
+function onPointerMove(event) {
+    if (event.isPrimary === false) return;
 
-	pointerX = event.clientX - windowHalfX;
-	targetRotation = targetRotationOnPointerDown + ( pointerX - pointerXOnPointerDown ) * 0.02;
+    pointerX = event.clientX - windowHalfX;
+    targetRotation = targetRotationOnPointerDown + (pointerX - pointerXOnPointerDown) * 0.02;
 }
 
 function onPointerUp(event) {
-	if ( event.isPrimary === false ) return;
+    if (event.isPrimary === false) return;
 
-	document.removeEventListener( 'pointermove', onPointerMove );
-	document.removeEventListener( 'pointerup', onPointerUp );
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
 
     // raycaster check intersection
-    raycaster.setFromCamera( mouse, camera)
-    const intersectes = raycaster.intersectObjects( scene.children);
+    raycaster.setFromCamera(mouse, camera)
+    const intersectes = raycaster.intersectObjects(scene.children);
 
     // Get the heights of the footers
     const optionHeight = options.clientHeight;
@@ -244,9 +304,9 @@ function onPointerUp(event) {
     const firstIntersect = intersectes.length > 0 && intersectes[0];
     console.log(firstIntersect)
 
-    if(!firstIntersect) return;
+    if (!firstIntersect) return;
 
-    if(firstIntersect.object.name === 'start') {
+    if (firstIntersect.object.name === 'start') {
 
         // Hide the menu
         menuContainer.style.display = 'none';
@@ -263,10 +323,10 @@ function onPointerUp(event) {
 
         console.log('start game')
     }
-    if(firstIntersect.object.name === 'option') {
+    if (firstIntersect.object.name === 'option') {
 
         // Close the credits if it's open
-        if(credits.style.bottom == `0px`){
+        if (credits.style.bottom == `0px`) {
             credits.style.bottom = `-${creditsHeight}px`;
             document.body.style.marginBottom = `0px`;
 
@@ -276,7 +336,7 @@ function onPointerUp(event) {
         }
 
         // If it's already open, close it
-        if(options.style.bottom == `0px`){
+        if (options.style.bottom == `0px`) {
             options.style.bottom = `-${optionHeight}px`;
             document.body.style.marginBottom = `0px`;
 
@@ -296,10 +356,10 @@ function onPointerUp(event) {
 
         refreshText();
     }
-    if(firstIntersect.object.name === 'credits') {
-        
+    if (firstIntersect.object.name === 'credits') {
+
         // Close the options if it's open
-        if(options.style.bottom == `0px`){
+        if (options.style.bottom == `0px`) {
             options.style.bottom = `-${optionHeight}px`;
             document.body.style.marginBottom = `0px`;
 
@@ -309,7 +369,7 @@ function onPointerUp(event) {
         }
 
         // If it's already open, close it
-        if(credits.style.bottom == `0px`){
+        if (credits.style.bottom == `0px`) {
             credits.style.bottom = `-${creditsHeight}px`;
             document.body.style.marginBottom = `0px`;
 
@@ -330,7 +390,7 @@ function onPointerUp(event) {
         textCreditsMesh.isClicked = true;
         refreshText();
     }
-    
+
 }
 
 function onMoveMove(event) {
@@ -342,32 +402,35 @@ function onMoveMove(event) {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    mouse.x = ( x / container.clientWidth ) * 2 - 1;
-	mouse.y = - ( y / container.clientHeight ) * 2 + 1;
+    mouse.x = (x / container.clientWidth) * 2 - 1;
+    mouse.y = -(y / container.clientHeight) * 2 + 1;
 }
 
 function hoverButton() {
-    raycaster.setFromCamera( mouse, camera );
-    const intersectes = raycaster.intersectObjects( scene.children);
-    
+    raycaster.setFromCamera(mouse, camera);
+    const intersectes = raycaster.intersectObjects(scene.children);
+
     intersectes.length === 0 && scene.children[2].children.forEach(child => {
-      child.scale.set(1,1,1)
+        child.scale.set(1, 1, 1)
+
+        child.material[0].color.set(0x00ff00);
     });
 
-    for(let i = 0; i < intersectes.length; i++) {
-        intersectes[i].object.scale.set(1.1, 1.1, 1.1);
+    for (let i = 0; i < intersectes.length; i++) {
+        //intersectes[i].object.scale.set(1.1, 1.1, 1.1);
+        intersectes[i].object.material[0].color.set(0x00ff00);
     }
 
 }
 
-function startAnimationChangeText(){
+function startAnimationChangeText() {
     const texts = scene.children[2].children;
 
     texts.forEach(text => {
         //text.scale.set(0.9, 1.0, 1.0);
-        
+
     })
-};  
+};
 
 function onClickHandler(event) {
     console.log('click')
@@ -377,12 +440,13 @@ function animate() {
     sound.setVolume(0.1)
     hoverButton();
     startAnimationChangeText();
-	requestAnimationFrame( animate );
-	render();
+    requestAnimationFrame(animate);
+    render();
 }
+
 function render() {
-	group.rotation.y += ( targetRotation - group.rotation.y ) * 0.05;
-	camera.lookAt( cameraTarget );
-	renderer.clear();
-	renderer.render( scene, camera );
+    group.rotation.y += (targetRotation - group.rotation.y) * 0.05;
+    camera.lookAt(cameraTarget);
+    renderer.clear();
+    renderer.render(scene, camera);
 }
