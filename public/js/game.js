@@ -4,7 +4,8 @@ import CannonDebugger from 'cannon-es-debugger'
 
 import Key from './keyboard.js';
 
-window.addEventListener('load', () => setup(), false);
+// Call this method when the game starts 
+//window.addEventListener('load', () => setup(), false);
 
 const WIDTH = 640;
 const HEIGHT = 360;
@@ -57,7 +58,7 @@ class GameObject {
     }
 }
 
-function setup() {
+export function setup() {
     document.getElementById("winnerBoard").innerHTML = "First to " + maxScore + " wins!";
 
     init();

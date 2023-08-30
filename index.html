@@ -2,51 +2,79 @@
 <html>
 
 <head>
-    <title>Game</title>
-    <style>
-        body {
-            background-color: black;
-        }
-
-        #gameCanvas {
-            background-color: black;
-            width: 640px;
-            height: 360px;
-            margin: auto;
-            align: center;
-        }
-
-        #scoreboard {
-            text-align: center;
-            font-family: Segoe UI, Helvetica, Ubuntu, sans-serif;
-            color: white;
-        }
-
-        #scores {
-            font-size: 600%;
-            padding: 0;
-            margin: 0;
-            color: white;
-        }
-
-        #title {
-            background-color: white;
-            color: black;
-        }
-    </style>
+    <script type="module" src='./public/js/keyboard.js'></script>
+    <script type="module" src='./public/js/game.js'></script>
+    <script type="module" src='./public/js/menu.js'></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="./public/css/style.css">
+    <title>Three Hockey</title>
+    
 </head>
 
 <body>
-    <div id='gameCanvas'></div>
-    <script type="module" src='./public/js/keyboard.js'></script>
-    <script type="module" src='./public/js/game.js'></script>
-    <div id='scoreboard'>
-        <h1 id='scores'>0-0</h1>
-        <h1 id='title'>3D PONG</h1>
-        <h2 id='winnerBoard'>First to 7 wins!</h2>
-        <h3>A - move left
-            <br>D - move right</h3>
+    <div class="container" id="menuContainer">
+    <div class="mainMenu">
+        <h1 id="title">Air Hockey 3D</h1>
+
+        <div id="menuCanvas"></div>
+        <div id="options">
+            <h2>Options</h2>
+            <hr>
+            <div class="menu">
+                <div class="option">
+                    <h3>Difficulty</h3>
+                    <input type="radio" id="easy" name="difficulty" value="easy" checked>
+                    <label for="easy">Easy</label><br>
+                    <input type="radio" id="medium" name="difficulty" value="medium">
+                    <label for="medium">Medium</label><br>
+                    <input type="radio" id="hard" name="difficulty" value="hard">
+                    <label for="hard">Hard</label>
+                </div>
+                <div class="option">
+                    <h3>In game</h3>
+                    1   <input type="range" id="points" name="points" min="1" max="10" value="7">10 points 
+                    <br>
+                    10<input type="range" id="points" name="points" min="1" max="10" value="7">60 seconds
+                </div>
+                <div class="option">
+                    <h3>Volume</h3>
+                    0 <input type="range" id="points" name="points" min="0" max="100" value="50">100  
+                    <br>
+                </div>
+            </div>
+        </div>
+        <div id="credits">
+            <h2>Credits</h2>
+            <hr>
+            <div class="menu">
+                Game Developed by Gian Marco Nobile and Alfredo Lipari
+            </div>
+        </div>
     </div>
+
+   
+</div>
+
+
+<audio id="song" preload="auto" >
+    <source src="sounds/BOX_15.mp3" type="audio/mpeg">
+</audio>
+
+    <div id="gameContainer">
+        <div id='gameCanvas'><p>ciao</p></div>
+        <div id='scoreboard'>
+            <h1 id='scores'>0-0</h1>
+            <h1 id='title'>3D PONG</h1>
+            <h2 id='winnerBoard'>First to 7 wins!</h2>
+            <h3>A - move left
+                <br>D - move right</h3>
+        </div>
+    </div>
+    </div>
+
+   
 </body>
 
 </html>
