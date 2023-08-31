@@ -4,8 +4,10 @@ import CannonDebugger from 'cannon-es-debugger'
 
 import Key from './keyboard.js';
 
-const WIDTH = 640;
-const HEIGHT = 360;
+import { TextBox, setBevelEnabled, loadFont } from './utils.js';
+
+const WIDTH = 680;
+const HEIGHT = 680;
 
 // scene object variables
 var world;
@@ -21,12 +23,12 @@ var fieldWidth = 200,
 var paddleSpeed = 3;
 
 // game-related variables
-var score1 = 0,
+var score1 = 2,
     score2 = 0,
     maxScore = 7;
 
 // set opponent difficulty (0 - easiest, 1 - hardest)
-var difficulty = 0.1;
+var difficulty = 0.2;
 
 //a class that fuses the three.js and cannon.js objects
 class GameObject {
@@ -94,9 +96,52 @@ function createRenderer() {
 
     renderer = new THREE.WebGLRenderer();
 
-    renderer.setSize(WIDTH, HEIGHT);
+    renderer.setSize(c.clientWidth, c.clientHeight);
 
     c.appendChild(renderer.domElement);
+}
+
+function createScore(font) {
+    // Create a Box and attach to it a text that will be its label
+    let materials = [
+        new THREE.MeshPhongMaterial({
+            color: 0xffffff,
+            flatShading: true
+        }), // front
+        new THREE.MeshPhongMaterial({
+            color: 0xffffff
+        }) // side
+    ];
+
+    const group = new THREE.Group();
+    group.name = "textGroup"
+    setBevelEnabled(false);
+
+    console.log('SCORE',score1)
+
+    const startTextBox = new TextBox({
+        name: 'start',
+        text: 'a',
+        font,
+        material: materials,
+        size: 10
+    });
+
+    startTextBox.position.set(10, -50, 10);
+    startTextBox.rotation.set(7, -10.5, -4.7);
+
+    group.add(startTextBox);
+
+    scene.add(group)
+   
+}
+
+function refreshScore() {
+    scene.getObjectByName("textGroup").removeFromParent();
+    //group.remove(startTextBox)
+    console.log('REFRESH')
+
+    createScore();
 }
 
 function createPuck() {
@@ -137,7 +182,7 @@ function createPuck() {
     cannonPuck.name = "puck";
 
     cannonPuck.addEventListener("collide", function (e) {
-        console.log(e.body.name)
+       // console.log(e.body.name)
         console.log("paddle hit");
     });
 
@@ -291,6 +336,11 @@ function init() {
     cannonDebugger = new CannonDebugger(scene, world)
 
     createRenderer();
+
+    loadFont()
+    .then(font => {
+        createScore(font);
+    })
 
     var planeHeight = fieldHeight,
         planeWidth = fieldWidth,
@@ -471,14 +521,16 @@ function matchScoreCheck() {
     var scoreLineLimit = (fieldHeight / 2) * 0.99 - puck.cannonObject.shapes[0].radius;
     if (puck.cannonObject.position.x <= -scoreLineLimit) {
         score2++;
-        document.getElementById("scores").innerHTML = score1 + "-" + score2;
+        //document.getElementById("scores").innerHTML = score1 + "-" + score2;
+        refreshScore();
         resetPuck(-1);
         resetPaddles();
     }
 
     if (puck.cannonObject.position.x >= scoreLineLimit) {
         score1++;
-        document.getElementById("scores").innerHTML = score1 + "-" + score2;
+        //document.getElementById("scores").innerHTML = score1 + "-" + score2;
+        refreshScore();
         resetPuck(1);
         resetPaddles();
     }
@@ -487,19 +539,19 @@ function matchScoreCheck() {
         resetPuck(0);
         resetPaddles();
 
-        document.getElementById("scores").innerHTML = "Player wins!";
-        document.getElementById("winnerBoard").innerHTML = "Refresh to play again";
+       // document.getElementById("scores").innerHTML = "Player wins!";
+       // document.getElementById("winnerBoard").innerHTML = "Refresh to play again";
     } else if (score2 >= maxScore) {
         resetPuck(0);
         resetPaddles();
 
-        document.getElementById("scores").innerHTML = "CPU wins!";
-        document.getElementById("winnerBoard").innerHTML = "Refresh to play again";
+      //  document.getElementById("scores").innerHTML = "CPU wins!";
+      //  document.getElementById("winnerBoard").innerHTML = "Refresh to play again";
     }
 }
 
 export function setup() {
-    document.getElementById("winnerBoard").innerHTML = "First to " + maxScore + " wins!";
+  //  document.getElementById("winnerBoard").innerHTML = "First to " + maxScore + " wins!";
 
     init();
 

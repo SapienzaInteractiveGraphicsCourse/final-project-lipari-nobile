@@ -1,103 +1,21 @@
 import * as THREE from 'three';
 import {
-    FontLoader
-} from 'three/addons/loaders/FontLoader.js';
-import {
-    TextGeometry
-} from 'three/addons/geometries/TextGeometry.js';
-import {
     GUI
 } from 'three/addons/libs/lil-gui.module.min.js';
 import {
     setup
 } from './game.js'
 
-let bevelEnabled = true;
+import { TextBox, setBevelEnabled, loadFont } from './utils.js';
+
 let pointerDown = false;
 let targetRotation = 0;
 let targetRotationOnPointerDown = 0;
 let pointerXOnPointerDown = 0;
+let bevelEnabled = true;
+let pointLight;
 
 init();
-
-class Text extends TextGeometry {
-    constructor({
-        text,
-        font
-    }) {
-        const size = 30,
-            height = 10,
-            curveSegments = 4,
-            bevelThickness = 1,
-            bevelSize = 1.5;
-        super(text, {
-            font,
-            size,
-            height,
-            curveSegments,
-            bevelThickness,
-            bevelSize,
-            bevelEnabled
-        });
-    }
-}
-
-class TextBox extends THREE.Group {
-    isOpen = false;
-    constructor({
-        name,
-        text,
-        font,
-        material
-    }) {
-        super();
-
-        let textMesh = new THREE.Mesh(
-            new Text({
-                text,
-                font
-            }),
-            material
-        );
-
-        textMesh.name = 'text';
-
-        //center text mesh
-        textMesh.geometry.computeBoundingBox();
-        textMesh.position.set(
-            -0.5 * (textMesh.geometry.boundingBox.max.x - textMesh.geometry.boundingBox.min.x),
-            -0.5 * (textMesh.geometry.boundingBox.max.y - textMesh.geometry.boundingBox.min.y),
-            -0.5 * (textMesh.geometry.boundingBox.max.z - textMesh.geometry.boundingBox.min.z)
-        );
-
-        this.add(textMesh);
-
-        let textBox3 = new THREE.Box3()
-            .setFromObject(textMesh);
-
-        let textBox = new THREE.Mesh(
-            new THREE.BoxGeometry(
-                textBox3.max.x - textBox3.min.x,
-                textBox3.max.y - textBox3.min.y,
-                textBox3.max.z - textBox3.min.z
-            ),
-            new THREE.MeshBasicMaterial({
-                color: 0x00ff00,
-                transparent: true,
-                opacity: 0
-            })
-        )
-
-        textBox.name = 'box';
-
-        //textBox.position.set(textMesh.position.x, textMesh.position.y, textMesh.position.z)
-
-        this.add(textBox);
-
-        this.name = name;
-    }
-}
-
 
 function init() {
     let globalContext = {};
@@ -133,15 +51,6 @@ function init() {
         });
 }
 
-async function loadFont(globalContext) {
-    const font = await new FontLoader()
-        .loadAsync('../fonts/Nunito.json')
-
-    globalContext.font = font;
-
-    return globalContext;
-}
-
 function createScene(globalContext) {
     const scene = new THREE.Scene();
     scene.fog = new THREE.Fog(0x000000, 250, 1400);
@@ -160,7 +69,7 @@ function addLightsToScene(globalContext) {
     dirLight.position.set(0, 0, 1).normalize();
     scene.add(dirLight);
 
-    const pointLight = new THREE.PointLight(0xffffff, 4.5, 0, 0);
+    pointLight = new THREE.PointLight(0xffffff, 4.5, 0, 0);
     pointLight.color.setHSL(Math.random(), 1, 0.5);
     pointLight.position.set(0, 100, 90);
     scene.add(pointLight);
@@ -208,7 +117,7 @@ async function loadAudio(globalContext) {
     sound.setBuffer(buffer);
     sound.setLoop(true);
     sound.setVolume(0.1);
-    sound.play();
+    //sound.play();
 
     return globalContext;
 }
@@ -299,6 +208,7 @@ function createGUI(globalContext) {
         },
         changeBevel: function () {
             bevelEnabled = !bevelEnabled;
+            setBevelEnabled(bevelEnabled);
             refreshText(globalContext)
         }
     };
@@ -472,7 +382,7 @@ function onPointerUp(globalContext) {
                     mouse = new THREE.Vector2(1, 1);
 
                     // Start the game
-                    document.getElementById('gameContainer').style.display = 'block';
+                    document.getElementById('gameContainer').style.display = 'flex';
                     setup();
 
                     // Close the GUI
