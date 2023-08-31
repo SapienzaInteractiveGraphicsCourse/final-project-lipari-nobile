@@ -26,7 +26,7 @@ var score1 = 0,
     maxScore = 7;
 
 // set opponent difficulty (0 - easiest, 1 - hardest)
-var difficulty = 0.2;
+var difficulty = 0.1;
 
 //a class that fuses the three.js and cannon.js objects
 class GameObject {
@@ -123,7 +123,7 @@ function createPuck() {
     var cannonPuck = new CANNON.Body({
         mass: 1,
         position: new CANNON.Vec3(0, 0, 5),
-        velocity: new CANNON.Vec3(1, 1, 0),
+        velocity: new CANNON.Vec3(-1, -1, 0),
         shape: new CANNON.Sphere(radius),
         material: puckMaterial,
         linearDamping: 0,
@@ -132,6 +132,13 @@ function createPuck() {
         angularFactor: new CANNON.Vec3(0, 0, 0),
         collisionFilterGroup: 2,
         collisionFilterMask: 1 | 4
+    });
+
+    cannonPuck.name = "puck";
+
+    cannonPuck.addEventListener("collide", function (e) {
+        console.log(e.body.name)
+        console.log("paddle hit");
     });
 
     cannonPuck.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI / 2);
@@ -199,7 +206,7 @@ function createPaddle(name) {
         type: CANNON.Body.DYNAMIC,
         mass: 1000,
         position: new CANNON.Vec3(-fieldHeight / 2 + radius, 0, paddleHeigth),
-        shape: new CANNON.Cylinder(radius / 2, radius / 2, paddleHeigth / 2),
+        shape: new CANNON.Cylinder(radius / 2, radius / 2, paddleHeigth / 2, 32),
         material: new CANNON.Material(),
         linearDamping: 0,
         linearFactor: new CANNON.Vec3(1, 1, 0),
@@ -208,6 +215,8 @@ function createPaddle(name) {
         collisionFilterGroup: 1,
         collisionFilterMask: 2 | 4 | 6
     });
+
+    cannonPaddle.name = name;
 
     cannonPaddle.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI / 2);
 
@@ -416,11 +425,13 @@ function opponentPaddleMovement() {
 function playerPaddleMovement() {
     var moveDirectionX = 0;
     var moveDirectionY = 0;
+    
     if (Key.isDown(Key.A))
         moveDirectionY = 1;
     else if (Key.isDown(Key.D))
         moveDirectionY = -1;
-    else if (Key.isDown(Key.W))
+    
+    if (Key.isDown(Key.W))
         moveDirectionX = 1;
     else if (Key.isDown(Key.S))
         moveDirectionX = -1;
