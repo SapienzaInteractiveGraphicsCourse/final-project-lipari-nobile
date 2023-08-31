@@ -1,6 +1,6 @@
 body {
     margin: 0;
-    padding:0;
+    padding: 0;
     background-color: black;
     font-family: 'Nunito', sans-serif;
     overflow: hidden;
@@ -15,9 +15,11 @@ h2 {
     margin-left: 1.5em;
     margin-bottom: 5px;
 }
-h2,h3 {
+
+h2,
+h3 {
     margin-top: 5px;
-    
+
 }
 
 hr {
@@ -26,20 +28,25 @@ hr {
     box-shadow: inset 0 12px 12px -12px rgba(0, 0, 0, 0.5);
 }
 
-input[type = "range"] {
+input[type="range"] {
     margin-bottom: 1em;
 }
 
 #gameCanvas {
     background-color: black;
-    width: 38em;
-    height: 38em;
-    margin: auto;
+    position: absolute;
+    width: 100%;
+    height: 100%;
 }
 
 #menuCanvas {
-    width: 24em;
-    height: 24em;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+
+    background-image: url("../images/layered-steps-haikei.png");
+    background-repeat: round;
+    background-size: contain;
 }
 
 #scoreboard {
@@ -67,9 +74,8 @@ input[type = "range"] {
     justify-content: center;
 }
 
-.container {
+/*.container {
     height: 100vh;
-    /*background: -webkit-linear-gradient(90deg, hsla(280, 84%, 41%, 1) 0%, hsla(218, 97%, 56%, 1) 100%); */
     background-image: url("../images/layered-steps-haikei.png");
     background-repeat: no-repeat;
     background-size: cover;
@@ -77,28 +83,15 @@ input[type = "range"] {
     align-items: center;
     justify-content: center;
 
-}
-
-#options, #credits {
-    background-color: #fffffe;
-    position: fixed;
-    bottom: -100%;
-    left: 0;
-    width: 100%;
-    padding-top: 10px;
-    padding-bottom: 20px;
-    padding-left: 0px;
-    transition: bottom 0.5s ease-in-out;
-    
-}
+}*/
 
 .menu {
     display: flex;
-    
+
     gap: 50px
 }
 
-.option{
+.option {
     min-width: 15%;
     border-radius: 15px;
     background-color: #faf7fa;

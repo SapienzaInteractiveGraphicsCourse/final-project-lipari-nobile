@@ -6,24 +6,40 @@ import {
     setup
 } from './game.js'
 
-import { TextBox, setBevelEnabled, loadFont } from './utils.js';
+import {
+    TextBox,
+    toggleBevelEnabled,
+    loadFont,
+} from './utils.js';
 
 let pointerDown = false;
 let targetRotation = 0;
 let targetRotationOnPointerDown = 0;
 let pointerXOnPointerDown = 0;
-let bevelEnabled = true;
 let pointLight;
+
+document.getElementById("closeOptions").addEventListener("click", () => {
+    document.getElementById("options").close();
+});
+
+document.getElementById("closeCredits").addEventListener("click", () => {
+    document.getElementById("credits").close();
+});
 
 init();
 
 function init() {
     let globalContext = {};
 
-    globalContext.container = document.getElementById('menuCanvas');
+    globalContext.menuCanvas = document.getElementById('menuCanvas');
+    globalContext.menuCanvas.width = window.innerWidth;
+    globalContext.menuCanvas.height = window.innerHeight;
+
     globalContext.options = document.getElementById('options');
     globalContext.credits = document.getElementById('credits');
+
     globalContext.menuContainer = document.getElementById('menuContainer');
+
     globalContext.raycaster = new THREE.Raycaster();
     globalContext.mouse = new THREE.Vector2(1, 1);
 
@@ -74,16 +90,18 @@ function addLightsToScene(globalContext) {
     pointLight.position.set(0, 100, 90);
     scene.add(pointLight);
 
+    globalContext.pointLight = pointLight;
+
     return globalContext;
 }
 
 function createCamera(globalContext) {
     const {
-        container
+        menuCanvas
     } = globalContext;
 
-    const camera = new THREE.PerspectiveCamera(35, container.clientWidth / container.clientHeight, 0.1, 2000);
-    camera.position.set(0, 0, 500);
+    const camera = new THREE.PerspectiveCamera(35, menuCanvas.clientWidth / menuCanvas.clientHeight, 0.1, 2000);
+    camera.position.set(0, 0, 800);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     globalContext.camera = camera;
@@ -93,7 +111,7 @@ function createCamera(globalContext) {
 
 async function loadAudio(globalContext) {
     const listener = new THREE.AudioListener();
-    listener.setMasterVolume(0.3);
+    listener.setMasterVolume(0);
 
     globalContext.listener = listener;
 
@@ -103,21 +121,28 @@ async function loadAudio(globalContext) {
 
     globalContext.sound = sound;
 
-    /*const songElement = document.getElementById('song')
-    sound.setMediaElementSource(songElement);
-    sound.hasPlaybackControl = true;
-    sound.setFilter(listener.context.createWaveShaper());
-    sound.setLoop(true);
-    sound.setVolume(0.1);
-    songElement.play();*/
+    if (false) {
+        const songElement = document.getElementById('song')
+        sound.setMediaElementSource(songElement);
+        sound.hasPlaybackControl = true;
+        sound.setFilter(listener.context.createWaveShaper());
+        sound.setLoop(true);
+        sound.setVolume(0);
+        songElement.play()
+            .catch((error) => {
+                if (error.name === "NotAllowedError") {
+                    console.log("Autoplay is not allowed.")
+                }
+            });
+    } else {
+        const buffer = await new THREE.AudioLoader()
+            .loadAsync('../sounds/BOX_15.mp3');
 
-    const buffer = await new THREE.AudioLoader()
-        .loadAsync('../sounds/BOX_15.mp3');
-
-    sound.setBuffer(buffer);
-    sound.setLoop(true);
-    sound.setVolume(0.1);
-    //sound.play();
+        sound.setBuffer(buffer);
+        sound.setLoop(true);
+        sound.setVolume(0.1);
+        sound.play();
+    }
 
     return globalContext;
 }
@@ -143,6 +168,18 @@ function createText(globalContext) {
     let group = new THREE.Group();
     group.name = "textGroup"
 
+    const titleTextBox = new TextBox({
+        name: 'title',
+        text: 'Air Hockey 3D',
+        font,
+        material: materials,
+        size: 50
+    });
+
+    titleTextBox.position.set(0, 175, 0);
+
+    group.add(titleTextBox);
+
     const startTextBox = new TextBox({
         name: 'start',
         text: 'Start game',
@@ -150,16 +187,18 @@ function createText(globalContext) {
         material: materials
     });
 
-    startTextBox.position.set(0, 100, 0);
+    startTextBox.position.set(0, 50, 0);
 
     group.add(startTextBox);
 
     const optionTextBox = new TextBox({
-        name: 'option',
+        name: 'options',
         text: optionText,
         font,
         material: materials
     });
+
+    optionTextBox.position.set(0, -50, 0);
 
     group.add(optionTextBox);
 
@@ -170,7 +209,7 @@ function createText(globalContext) {
         material: materials
     });
 
-    creditsTextBox.position.set(0, -100, 0);
+    creditsTextBox.position.set(0, -150, 0);
 
     group.add(creditsTextBox);
 
@@ -181,7 +220,7 @@ function createText(globalContext) {
 
 function createRenderer(globalContext) {
     const {
-        container
+        menuCanvas
     } = globalContext;
 
     let renderer = new THREE.WebGLRenderer({
@@ -189,8 +228,8 @@ function createRenderer(globalContext) {
         alpha: true
     }); // alpha turn background transparent
     renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    container.appendChild(renderer.domElement);
+    renderer.setSize(menuCanvas.clientWidth, menuCanvas.clientHeight);
+    menuCanvas.appendChild(renderer.domElement);
 
     globalContext.renderer = renderer;
 
@@ -199,7 +238,8 @@ function createRenderer(globalContext) {
 
 function createGUI(globalContext) {
     const {
-        listener
+        listener,
+        pointLight
     } = globalContext;
 
     const params = {
@@ -207,8 +247,7 @@ function createGUI(globalContext) {
             pointLight.color.setHSL(Math.random(), 1, 0.5);
         },
         changeBevel: function () {
-            bevelEnabled = !bevelEnabled;
-            setBevelEnabled(bevelEnabled);
+            toggleBevelEnabled();
             refreshText(globalContext)
         }
     };
@@ -241,17 +280,17 @@ function createGUI(globalContext) {
 
 function addEventListeners(globalContext) {
     const {
-        container,
+        menuCanvas,
         sound,
         listener
     } = globalContext;
 
-    container.style.touchAction = 'none';
+    menuCanvas.style.touchAction = 'none';
     window.addEventListener('resize', onWindowResize(globalContext));
-    container.addEventListener('mousemove', onMouseMove(globalContext));
-    container.addEventListener('pointerdown', onPointerDown(globalContext));
-    document.addEventListener('pointermove', onPointerMove(globalContext));
-    document.addEventListener('pointerup', onPointerUp(globalContext));
+    menuCanvas.addEventListener('mousemove', onMouseMove(globalContext));
+    menuCanvas.addEventListener('pointerdown', onPointerDown(globalContext));
+    menuCanvas.addEventListener('pointermove', onPointerMove(globalContext));
+    menuCanvas.addEventListener('pointerup', onPointerUp(globalContext));
 
     document.getElementById('volume').addEventListener('input', (event) => {
         console.log(event)
@@ -266,23 +305,23 @@ function addEventListeners(globalContext) {
 
 function onWindowResize(globalContext) {
     const {
-        container,
+        menuCanvas,
         camera,
         renderer
     } = globalContext;
 
     return () => {
-        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.aspect = menuCanvas.clientWidth / menuCanvas.clientHeight;
 
         camera.updateProjectionMatrix();
 
-        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setSize(menuCanvas.clientWidth, menuCanvas.clientHeight);
     }
 }
 
 function onMouseMove(globalContext) {
     const {
-        container,
+        menuCanvas,
         renderer,
         mouse
     } = globalContext;
@@ -295,14 +334,14 @@ function onMouseMove(globalContext) {
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
 
-        mouse.x = (x / container.clientWidth) * 2 - 1;
-        mouse.y = -(y / container.clientHeight) * 2 + 1;
+        mouse.x = (x / menuCanvas.clientWidth) * 2 - 1;
+        mouse.y = -(y / menuCanvas.clientHeight) * 2 + 1;
     }
 }
 
 function onPointerDown(globalContext) {
     const {
-        container,
+        menuCanvas,
     } = globalContext;
 
     console.log('onPointerDown:');
@@ -312,14 +351,14 @@ function onPointerDown(globalContext) {
 
         pointerDown = true;
 
-        pointerXOnPointerDown = event.clientX - container.clientWidth / 2;
+        pointerXOnPointerDown = event.clientX - menuCanvas.clientWidth / 2;
         targetRotationOnPointerDown = targetRotation;
     }
 }
 
 function onPointerMove(globalContext) {
     const {
-        container
+        menuCanvas
     } = globalContext;
 
     console.log('onPointerMove');
@@ -328,10 +367,11 @@ function onPointerMove(globalContext) {
         if (event.isPrimary === false) return;
 
         if (pointerDown === true) {
-            let pointerX = event.clientX - container.clientWidth / 2;
+            let pointerX = event.clientX - menuCanvas.clientWidth / 2;
             targetRotation = targetRotationOnPointerDown + (pointerX - pointerXOnPointerDown) * 0.02;
         } else {
-            targetRotation = 0;
+            //set the target to the closent "0" degrees
+            targetRotation = Math.round(targetRotation / (2 * Math.PI)) * (2 * Math.PI);
         }
     }
 }
@@ -354,25 +394,13 @@ function onPointerUp(globalContext) {
     return (event) => {
         if (event.isPrimary === false) return;
 
-        //document.removeEventListener('pointermove', onPointerMove(globalContext));
-        //document.removeEventListener('pointerup', onPointerUp(globalContext));
-
         pointerDown = false;
 
-        // raycaster check intersection
         raycaster.setFromCamera(mouse, camera)
         const intersectes = raycaster.intersectObjects(scene.children);
 
-        // Get the heights of the footers
-        const optionHeight = options.clientHeight;
-        const creditsHeight = credits.clientHeight;
-
         if (intersectes.length !== 0) {
             const firstIntersect = intersectes[0].object.parent;
-
-            console.log(firstIntersect.name);
-            console.log(optionOpen);
-            console.log(creditsOpen);
 
             switch (firstIntersect.name) {
                 case 'start':
@@ -390,78 +418,64 @@ function onPointerUp(globalContext) {
 
                     console.log('start game')
                     break;
-                case 'option':
+                case 'options':
                     // Close the credits if it's open
-                    //if (credits.style.bottom == `0px`) {
                     if (creditsOpen) {
                         creditsOpen = false;
-                        credits.style.bottom = `-${creditsHeight}px`;
-                        document.body.style.marginBottom = `0px`;
+                        credits.close();
 
                         // Reset option text
-                        globalContext.creditsText = 'Credits';
+                        //globalContext.creditsText = 'Credits';
                     }
 
                     // If it's already open, close it
-                    //if (options.style.bottom == `0px`) {
                     if (optionOpen) {
                         optionOpen = false;
-                        options.style.bottom = `-${optionHeight}px`;
-                        document.body.style.marginBottom = `0px`;
+                        options.close();
 
                         // Reset option text
-                        globalContext.optionText = 'Options';
-                        refreshText(globalContext)
+                        //globalContext.optionText = 'Options';
+                        //refreshText(globalContext)
                         return;
                     }
 
                     optionOpen = true;
 
-                    options.style.bottom = `0px`;
-
-                    // Scroll the content to make the footer visible
-                    document.body.style.marginBottom = `${optionHeight}px`;
+                    options.showModal();
 
                     // Change Option text to close
-                    globalContext.optionText = 'Close Options';
+                    //globalContext.optionText = 'Close Options';
 
-                    refreshText(globalContext)
+                    //refreshText(globalContext)
                     break;
                 case 'credits':
                     // Close the options if it's open
-                    //if (options.style.bottom == `0px`) {
                     if (optionOpen) {
                         optionOpen = false;
-                        options.style.bottom = `-${optionHeight}px`;
-                        document.body.style.marginBottom = `0px`;
+                        options.close();
 
                         // Reset option text
-                        globalContext.optionText = 'Options';
+                        //globalContext.optionText = 'Options';
                     }
 
                     // If it's already open, close it
-                    //if (credits.style.bottom == `0px`) {
                     if (creditsOpen) {
                         creditsOpen = false;
-                        credits.style.bottom = `-${creditsHeight}px`;
-                        document.body.style.marginBottom = `0px`;
+                        credits.close();
 
                         // Reset option text
-                        globalContext.creditsText = 'Credits';
-                        refreshText(globalContext)
+                        //globalContext.creditsText = 'Credits';
+                        //refreshText(globalContext)
                         return;
                     }
 
                     creditsOpen = true;
 
-                    credits.style.bottom = `0px`;
-
-                    // Scroll the content to make the footer visible
-                    document.body.style.marginBottom = `${creditsHeight}px`;
+                    credits.showModal();
 
                     // Change Option text to close
-                    globalContext.creditsText = 'Close Credits';
-                    refreshText(globalContext)
+                    //globalContext.creditsText = 'Close Credits';
+                    //refreshText(globalContext)
                     break;
                 default:
                     break;
@@ -493,7 +507,9 @@ function animate(globalContext) {
         requestAnimationFrame(render);
 
         //move text based on mouse position
-        //scene.getObjectByName("textGroup").rotation.y = (mouse.x - 170);
+        //scene.getObjectByName("textGroup").rotation.x = -mouse.y;
+        //scene.getObjectByName("textGroup").rotation.y = mouse.x;
+
         scene.getObjectByName("textGroup").rotation.y += (targetRotation - scene.getObjectByName("textGroup").rotation.y) * 0.05;
 
         renderer.clear();
@@ -516,8 +532,7 @@ function hoverButton(globalContext) {
     const intersectes = raycaster.intersectObjects(scene.children);
 
     if (intersectes.length === 0) {
-        //scene.children[2].children.forEach(child => {
-        scene.getObjectByName("textGroup")?.children?.forEach(child => {
+        scene.getObjectByName("textGroup").children.filter(x => x.name !== 'title').forEach(child => {
             child.scale.set(1, 1, 1)
         })
     } else {

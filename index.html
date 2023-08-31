@@ -10,16 +10,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="./public/css/style.css">
     <title>Three Hockey</title>
-    
+
 </head>
 
 <body>
+    <audio id="song" preload="auto">
+        <source src="sounds/BOX_15.mp3" type="audio/mpeg">
+    </audio>
     <div class="container" id="menuContainer">
-    <div class="mainMenu">
-        <h1 id="title">Air Hockey 3D</h1>
-
         <div id="menuCanvas"></div>
-        <div id="options">
+        <dialog id="options">
+            <button id="closeOptions">X</button>
             <h2>Options</h2>
             <hr>
             <div class="menu">
@@ -34,40 +35,32 @@
                 </div>
                 <div class="option">
                     <h3>In game</h3>
-                    1   <input type="range" id="points" name="points" min="1" max="10" value="7">10 points 
+                    1 <input type="range" id="points" name="points" min="1" max="10" value="7">10 points
                     <br>
                     10<input type="range" id="points" name="points" min="1" max="10" value="7">60 seconds
                 </div>
                 <div class="option">
                     <h3>Volume</h3>
-                    0 <input type="range" id="volume" name="points" min="0" max="100" value="100">100  
+                    0 <input type="range" id="volume" name="points" min="0" max="100" value="100">100
                     <br>
                 </div>
             </div>
-        </div>
-        <div id="credits">
+        </dialog>
+        <dialog id="credits">
+            <button id="closeCredits">X</button>
             <h2>Credits</h2>
             <hr>
             <div class="menu">
                 Game Developed by Gian Marco Nobile and Alfredo Lipari
             </div>
-        </div>
+        </dialog>
     </div>
-
-   
-</div>
-
-
-<audio id="song" preload="auto" >
-    <source src="sounds/BOX_15.mp3" type="audio/mpeg">
-</audio>
 
     <div id="gameContainer">
-        <div id='gameCanvas' ></div>
+        <div id='gameCanvas'></div>
     </div>
-</div>
+    </div>
 
-   
 </body>
 
 </html>

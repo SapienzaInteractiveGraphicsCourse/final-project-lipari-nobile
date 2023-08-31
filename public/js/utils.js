@@ -8,8 +8,12 @@ import {
 
 let bevelEnabled = true;
 
-export function setBevelEnabled(enabled) {
-    bevelEnabled = enabled;
+export function toggleBevelEnabled() {
+    bevelEnabled = !bevelEnabled;
+}
+
+export function setBevelEnabled(enable) {
+    bevelEnabled = enable;
 }
 
 export async function loadFont(globalContext) {
@@ -17,7 +21,7 @@ export async function loadFont(globalContext) {
         .loadAsync('../fonts/Nunito.json')
 
     // if globalContext is null then return font
-    if(globalContext){
+    if (globalContext) {
         globalContext.font = font;
     }
 

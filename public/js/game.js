@@ -75,7 +75,7 @@ function createWorld() {
 
 function addCameraToScene(scene) {
     var VIEW_ANGLE = 50,
-        ASPECT = WIDTH / HEIGHT,
+        ASPECT = document.getElementById("gameCanvas").clientWidth / document.getElementById("gameCanvas").clientHeight,
         NEAR = 0.1,
         FAR = 10000;
 
@@ -168,7 +168,7 @@ function createPuck() {
     var cannonPuck = new CANNON.Body({
         mass: 1,
         position: new CANNON.Vec3(0, 0, 5),
-        velocity: new CANNON.Vec3(-1, -1, 0),
+        velocity: new CANNON.Vec3(0, 0, 0),
         shape: new CANNON.Sphere(radius),
         material: puckMaterial,
         linearDamping: 0,
