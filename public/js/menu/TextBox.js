@@ -2,9 +2,7 @@ import * as THREE from 'three';
 import {
     TextGeometry
 } from 'three/addons/geometries/TextGeometry.js';
-import {
-    FontLoader
-} from 'three/addons/loaders/FontLoader.js';
+
 
 let bevelEnabled = true;
 
@@ -14,18 +12,6 @@ export function toggleBevelEnabled() {
 
 export function setBevelEnabled(enable) {
     bevelEnabled = enable;
-}
-
-export async function loadFont(globalContext) {
-    const font = await new FontLoader()
-        .loadAsync('../fonts/Nunito.json')
-
-    // if globalContext is null then return font
-    if (globalContext) {
-        globalContext.font = font;
-    }
-
-    return globalContext ? globalContext : font;
 }
 
 class Text extends TextGeometry {
