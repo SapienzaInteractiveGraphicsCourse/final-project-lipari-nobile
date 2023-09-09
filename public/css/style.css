@@ -1,3 +1,7 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -12,12 +16,11 @@ h1 {
 }
 
 h2 {
-    margin-left: 1.5em;
-    margin-bottom: 5px;
+    margin: 0px;
 }
 
-h2,
 h3 {
+    margin: 0px;
     margin-top: 5px;
 
 }
@@ -99,3 +102,34 @@ input[type="range"] {
     padding: 5px;
     padding-top: 0px;
 }
+
+dialog {
+    pointer-events: none;
+    opacity: 0;
+    width: auto;
+    transition: opacity 2.5s ease;
+    border-radius: 5px;
+    box-shadow: 0 10px 20px 0 rgba(0, 0, 0, .3);
+
+  }
+  dialog[open] {
+    opacity: 1;
+    pointer-events: inherit;
+  }
+  dialog[close] {
+    opacity: 0;
+    pointer-events: inherit;
+  }
+  dialog::backdrop {
+    backdrop-filter: blur(25px);
+    transition: backdrop-filter .5s ease;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5em;
+    background-color: #faf7fa;
+    border-radius: 15px;
+  }

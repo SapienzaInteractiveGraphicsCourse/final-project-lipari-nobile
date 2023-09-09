@@ -20,8 +20,10 @@
     <div class="container" id="menuContainer">
         <div id="menuCanvas"></div>
         <dialog id="options">
-            <button id="closeOptions">X</button>
-            <h2>Options</h2>
+            <div class="header">
+                <h2>Options</h2>
+                <button id="closeOptions">X</button>
+            </div> 
             <hr>
             <div class="menu">
                 <div class="option">
@@ -46,9 +48,11 @@
                 </div>
             </div>
         </dialog>
-        <dialog id="credits">
-            <button id="closeCredits">X</button>
-            <h2>Credits</h2>
+        <dialog id="credits" modal-mode="mega">
+            <div class="header">
+                <h2>Credits</h2>
+                <button id="closeCredits">X</button>
+            </div>
             <hr>
             <div class="menu">
                 Game Developed by Gian Marco Nobile and Alfredo Lipari
