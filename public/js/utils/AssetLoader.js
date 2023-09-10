@@ -12,11 +12,15 @@ export async function loadFont(globalContext) {
     return globalContext;
 }
 
-export async function loadAudioBuffer(globalContext) {
+export async function loadAudioBuffer(globalContext, audioLink) {
     const audioBuffer = await new THREE.AudioLoader()
-        .loadAsync('../sounds/BOX_15.mp3');
+        .loadAsync(audioLink);
     
-    globalContext.audioBuffer = audioBuffer;
+    //globalContext.audioBuffer = audioBuffer;
+
+    const audioTitle = audioLink.split('/').pop().split('.')[0];
+
+    globalContext[audioTitle] = audioBuffer;
     
     return globalContext;
 }

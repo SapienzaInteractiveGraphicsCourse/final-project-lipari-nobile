@@ -7,7 +7,7 @@ import {
 
 export class Puck extends GameObject {
     puckSpeed = 5;
-    constructor() {
+    constructor(onCollide) {
         var radius = 10;
 
         var puckMaterial =
@@ -42,10 +42,7 @@ export class Puck extends GameObject {
 
         cannonPuck.name = "puck";
 
-        /*cannonPuck.addEventListener("collide", function (e) {
-            //console.log(e.body.name)
-            console.log("paddle hit");
-        });*/
+        cannonPuck.addEventListener("collide", onCollide)
 
         cannonPuck.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI / 2);
 

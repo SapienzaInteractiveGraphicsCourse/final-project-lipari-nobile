@@ -51,11 +51,11 @@ function init() {
     globalContext.creditsOpen = false;
 
     loadFont(globalContext)
-        .then(loadAudioBuffer)
+        .then(() => loadAudioBuffer(globalContext, "sounds/BOX_15.mp3"))
         .then(createScene)
         .then(addLightsToScene)
         .then(createCamera)
-        .then(createAudio)
+        .then(() => createAudio(globalContext, "BOX_15"))
         .then(createText)
         .then(createRenderer)
         .then(createGUI)
@@ -108,14 +108,14 @@ function createCamera(globalContext) {
     return globalContext;
 }
 
-async function createAudio(globalContext) {
-    const {
-        audioBuffer
-    } = globalContext;
+async function createAudio(globalContext, audioTitle) {
+    const audioBuffer = globalContext[audioTitle];
     const listener = new THREE.AudioListener();
     listener.setMasterVolume(0.05);
 
     globalContext.listener = listener;
+
+    console.log(globalContext)
 
     globalContext.camera.add(listener);
 

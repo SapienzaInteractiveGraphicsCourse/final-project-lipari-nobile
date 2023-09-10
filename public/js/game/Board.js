@@ -36,11 +36,13 @@ export class Board extends GameObjectGroup {
     fieldWidth = 200;
     fieldDepth = 10;
 
+    scoreSound;
+    gameEndSound;
 
-    constructor(font) {
+    constructor(globalContext) {
         super();
 
-        this.font = font;
+        this.font = globalContext.font;
 
         this.add(this.createWall(this.fieldDepth, this.fieldHeight, this.fieldDepth)
             .setPosition(0, -(this.fieldWidth / 2 + this.fieldDepth / 2), 0)
@@ -71,7 +73,12 @@ export class Board extends GameObjectGroup {
             .setPosition(this.fieldHeight / 4, 0, 0)
             .setRotation(new CANNON.Vec3(0, 0, 1), -Math.PI / 2));
 
-        this.add(new Puck('puck')
+        const onCollide = (event) => {
+            console.log(globalContext["puck_hit"])
+            !globalContext["puck_hit"].isPlaying &&  globalContext["puck_hit"].play();
+        }    
+
+        this.add(new Puck(onCollide)
             .setPosition(0, 0, 5)
             .setVelocity(-1, 0, 0));
 
@@ -88,6 +95,12 @@ export class Board extends GameObjectGroup {
                 targetPuck: this.gameObjects.find(x => x.name == "puck")
             })
             .setPosition(this.fieldHeight / 2 - 20, 0, 5));
+         
+        this.scoreSound = globalContext["goal"] 
+        
+        this.gameEndSound = globalContext["game_end"]
+
+        globalContext["game_start"].play();    
     }
 
     createWall(x, y, z) {
@@ -214,12 +227,14 @@ export class Board extends GameObjectGroup {
         var scoreLineLimit = (this.fieldHeight / 2) * 0.99 - puck.cannonObject.shapes[0].radius;
 
         if (puck.cannonObject.position.x <= -scoreLineLimit) {
+            !this.scoreSound.isPlaying && this.scoreSound.play();
             this.increaseOpponentScore();
             this.resetPuck(-1);
             this.resetPaddles();
         }
 
         if (puck.cannonObject.position.x >= scoreLineLimit) {
+            !this.scoreSound.isPlaying && this.scoreSound.play();
             this.increasePlayerScore();
             this.resetPuck(1);
             this.resetPaddles();
@@ -230,9 +245,11 @@ export class Board extends GameObjectGroup {
 
     checkIfWin() {
         if (this.playerScore >= this.maxScore) {
+            !this.gameEndSound.isPlaying && this.gameEndSound.play();
             this.resetPuck(0);
             this.resetPaddles();
         } else if (this.opponentScore >= this.maxScore) {
+            !this.gameEndSound.isPlaying && this.gameEndSound.play();
             this.resetPuck(0);
             this.resetPaddles();
         }

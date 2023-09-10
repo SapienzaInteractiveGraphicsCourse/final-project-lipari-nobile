@@ -6,6 +6,10 @@ import { Board } from './Board.js';
 
 import { loadFont } from '../utils/AssetLoader.js';
 
+import {
+    loadAudioBuffer
+} from '../utils/AssetLoader.js';
+
 function init() {
     let globalContext = {};
 
@@ -14,11 +18,20 @@ function init() {
     globalContext.canvas.height = window.innerHeight;
 
     loadFont(globalContext)
+        .then(() => loadAudioBuffer(globalContext, 'sounds/game_end.mp3'))
+        .then(() => loadAudioBuffer(globalContext, 'sounds/game_start.mp3'))
+        .then(() => loadAudioBuffer(globalContext, 'sounds/goal.mp3'))
+        .then(() => loadAudioBuffer(globalContext, 'sounds/puck_hit.mp3'))
         .then(createScene)
         .then(createWorld)
         .then(createDebugRenderer)
         .then(addLightsToScene)
         .then(createCamera)
+        .then(initListener)
+        .then(() => createAudio(globalContext, "game_end"))
+        .then(() => createAudio(globalContext, "game_start"))
+        .then(() => createAudio(globalContext, "goal"))
+        .then(() => createAudio(globalContext, "puck_hit"))
         .then(createRenderer)
         .then(createBoard)
         .then(addEventListeners)
@@ -72,6 +85,16 @@ function addLightsToScene(globalContext) {
     return globalContext;
 }
 
+function initListener(globalContext) {
+
+    const listener = new THREE.AudioListener();
+    listener.setMasterVolume(0.05);
+
+    globalContext.listener = listener;
+
+}
+
+
 function createCamera(globalContext) {
     const {
         canvas,
@@ -93,6 +116,22 @@ function createCamera(globalContext) {
     scene.add(camera);
 
     globalContext.camera = camera;
+
+    return globalContext;
+}
+
+async function createAudio(globalContext, audioTitle) {
+    const audioBuffer = globalContext[audioTitle];
+
+    globalContext.camera.add(globalContext.listener);
+
+    const sound = new THREE.Audio(globalContext.listener);
+
+    sound.setBuffer(audioBuffer);
+    sound.setLoop(false);
+    sound.setVolume(1);
+
+    globalContext[audioTitle] = sound;
 
     return globalContext;
 }
@@ -126,7 +165,7 @@ function createBoard(globalContext) {
         font
     } = globalContext;
 
-    const board = new Board(font);
+    const board = new Board(globalContext);
     board.addToAll(scene, world);
 
     globalContext.board = board;
