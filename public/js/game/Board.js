@@ -248,10 +248,12 @@ export class Board extends GameObjectGroup {
             !this.gameEndSound.isPlaying && this.gameEndSound.play();
             this.resetPuck(0);
             this.resetPaddles();
+            this.showWinMessage();
         } else if (this.opponentScore >= this.maxScore) {
             !this.gameEndSound.isPlaying && this.gameEndSound.play();
             this.resetPuck(0);
             this.resetPaddles();
+            this.showWinMessage();
         }
     }
 
@@ -267,6 +269,28 @@ export class Board extends GameObjectGroup {
 
         this.gameObjects.find(x => x.name == "opponentPaddle")
             .setPosition(this.fieldHeight / 2 - 20, 0, 5);
+    }
+
+    showWinMessage() {
+        var message = this.playerScore > this.opponentScore ? "You win!" : "You lose!";
+        var messageObject = new THREE.Mesh(
+            new TextGeometry(message, {
+                font: this.font,
+                size: 20,
+                height: 5
+            }),
+            new THREE.MeshLambertMaterial({
+                color: 0xff0fff
+            })
+        );
+        messageObject.geometry.computeBoundingBox()
+        messageObject.geometry.translate(-messageObject.geometry.boundingBox.max.x / 2, -messageObject.geometry.boundingBox.max.y / 2, -messageObject.geometry.boundingBox.max.z / 2);
+
+        var messageGameObject = new GameObject("message", messageObject, null);
+        messageGameObject.setPosition(0, 0, 10);
+        messageGameObject.setRotation(new THREE.Vector3(0, 0, 1), -Math.PI / 2);
+        messageGameObject.addToAll(this.scene, this.world);
+        this.add(messageGameObject);
     }
 
     sync() {
