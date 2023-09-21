@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import {
+    CCDIKSolver,
+    CCDIKHelper
+} from 'three/addons/animation/CCDIKSolver.js';
+import {
     TextGeometry
 } from 'three/addons/geometries/TextGeometry.js';
 
@@ -20,6 +24,9 @@ import {
 import {
     Puck
 } from './Puck.js';
+import {
+    RobotArm
+} from './RobotArm.js';
 
 export class Board extends GameObjectGroup {
     playerScore = 0;
@@ -74,9 +81,8 @@ export class Board extends GameObjectGroup {
             .setRotation(new CANNON.Vec3(0, 0, 1), -Math.PI / 2));
 
         const onCollide = (event) => {
-            console.log(globalContext["puck_hit"])
-            !globalContext["puck_hit"].isPlaying &&  globalContext["puck_hit"].play();
-        }    
+            !globalContext["puck_hit"].isPlaying && globalContext["puck_hit"].play();
+        }
 
         this.add(new Puck(onCollide)
             .setPosition(0, 0, 5)
@@ -95,12 +101,123 @@ export class Board extends GameObjectGroup {
                 targetPuck: this.gameObjects.find(x => x.name == "puck")
             })
             .setPosition(this.fieldHeight / 2 - 20, 0, 5));
-         
-        this.scoreSound = globalContext["goal"] 
-        
+
+        let bones = []
+
+        let armHeight = 220;
+        let segments = 2;
+        let segmentSize = armHeight / segments;
+
+        // "root"
+        let rootBone = new THREE.Bone();
+        rootBone.position.x = 220;
+        rootBone.position.y = 0;
+        rootBone.position.z = 5;
+        bones.push(rootBone);
+
+        // "bone0"
+        let prevBone = new THREE.Bone();
+        prevBone.position.y = 0;
+        rootBone.add(prevBone);
+        bones.push(prevBone);
+
+        // "bone1", "bone2", "bone3"
+        for (let i = 1; i <= segments; i++) {
+            const bone = new THREE.Bone();
+            bone.position.z = segmentSize;
+            bones.push(bone);
+
+            prevBone.add(bone);
+            prevBone = bone;
+        }
+
+        // "target"
+        const targetBone = new THREE.Bone();
+        this.ikTarget = targetBone;
+        targetBone.position.z = armHeight + segmentSize;
+        rootBone.add(targetBone);
+        bones.push(targetBone);
+
+        //
+        // skinned mesh
+        //
+        let geometry = new THREE.CylinderGeometry(
+            5, // radiusTop
+            5, // radiusBottom
+            armHeight, // height
+            8, // radiusSegments
+            segments, // heightSegments
+            true // openEnded
+        )
+
+        geometry.translate(220, 0, 0);
+        geometry.rotateX(Math.PI / 2);
+        geometry.translate(0, 0, (armHeight)/2 + 5);
+        const position = geometry.attributes.position;
+
+        const vertex = new THREE.Vector3();
+
+        const skinIndices = [];
+        const skinWeights = [];
+
+        for (let i = 0; i < position.count; i++) {
+
+            vertex.fromBufferAttribute(position, i);
+
+            const y = (vertex.z + armHeight/2);
+
+            const skinIndex = Math.floor(y / segmentSize);
+            const skinWeight = (y % segmentSize) / segmentSize;
+
+            skinIndices.push(skinIndex, skinIndex + 1, 0, 0);
+            skinWeights.push(1 - skinWeight, skinWeight, 0, 0);
+
+        }
+
+        geometry.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(skinIndices, 4));
+        geometry.setAttribute('skinWeight', new THREE.Float32BufferAttribute(skinWeights, 4));
+
+        let material = new THREE.MeshPhongMaterial({
+            color: 0x156289,
+            emissive: 0x072534,
+            side: THREE.DoubleSide,
+            flatShading: true,
+            wireframe: true
+        });
+
+        material = new THREE.MeshLambertMaterial({
+            color: 0x0090ff
+        });
+
+        const mesh = new THREE.SkinnedMesh(geometry, material);
+        const skeleton = new THREE.Skeleton(bones);
+
+        mesh.add(bones[0]); // "root" bone
+        mesh.bind(skeleton);
+
+        globalContext.scene.add(mesh);
+
+        let skeletonHelper = new THREE.SkeletonHelper(mesh);
+        skeletonHelper.material.linewidth = 2;
+        globalContext.scene.add(skeletonHelper);
+
+        const iks = [{
+            target: 4, // "target"
+            effector: 3, // "bone3"
+            links: [{
+                index: 2
+            }, {
+                index: 1
+            }] // "bone2", "bone1", "bone0"
+        }];
+        this.ikSolver = new CCDIKSolver(mesh, iks);
+        globalContext.scene.add( new CCDIKHelper( mesh, iks ) );
+
+        this.scoreSound = globalContext["goal"]
+
         this.gameEndSound = globalContext["game_end"]
 
-        globalContext["game_start"].play();    
+        globalContext["game_start"].play();
     }
 
     createWall(x, y, z) {
@@ -219,6 +336,19 @@ export class Board extends GameObjectGroup {
 
         this.gameObjects.find(x => x.name == "puck")
             .update();
+
+        this.ikTarget.position.x = this.gameObjects.find(x => x.name == "opponentPaddle").threeObject.position.x - 220;
+        this.ikTarget.position.y = this.gameObjects.find(x => x.name == "opponentPaddle").threeObject.position.y;
+        this.ikTarget.position.z = this.gameObjects.find(x => x.name == "opponentPaddle").threeObject.position.z + 5;
+        this.ikSolver.update();
+
+        /*this.gameObjects.find(x => x.name == "robotArm")
+            .update();*/
+        /*.updateTargetPosition(
+            this.gameObjects.find(x => x.name == "opponentPaddle").cannonObject.position.x,
+            this.gameObjects.find(x => x.name == "opponentPaddle").cannonObject.position.y,
+            this.gameObjects.find(x => x.name == "opponentPaddle").cannonObject.position.z
+        );*/
     }
 
     checkIfScored() {
@@ -229,14 +359,14 @@ export class Board extends GameObjectGroup {
         if (puck.cannonObject.position.x <= -scoreLineLimit) {
             !this.scoreSound.isPlaying && this.scoreSound.play();
             this.increaseOpponentScore();
-            this.resetPuck(-1);
+            this.resetPuck(-0.5);
             this.resetPaddles();
         }
 
         if (puck.cannonObject.position.x >= scoreLineLimit) {
             !this.scoreSound.isPlaying && this.scoreSound.play();
             this.increasePlayerScore();
-            this.resetPuck(1);
+            this.resetPuck(0.5);
             this.resetPaddles();
         }
 

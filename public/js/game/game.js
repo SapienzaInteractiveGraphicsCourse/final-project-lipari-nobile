@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
-import CannonDebugger from 'cannon-es-debugger'
+import CannonDebugger from 'cannon-es-debugger';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 import { Board } from './Board.js';
 
@@ -41,7 +42,7 @@ function init() {
         });
 }
 
-async function createScene(globalContext) {
+function createScene(globalContext) {
     const scene = new THREE.Scene();
     scene.add(new THREE.AxesHelper(100));
     
@@ -152,6 +153,8 @@ function createRenderer(globalContext) {
     renderer.shadowMap.enabled = true;
 
     canvas.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls( globalContext.camera, renderer.domElement );
 
     globalContext.renderer = renderer;
 
