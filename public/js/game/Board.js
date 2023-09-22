@@ -28,10 +28,12 @@ import {
     RobotArm
 } from './RobotArm.js';
 
+
 export class Board extends GameObjectGroup {
     playerScore = 0;
     opponentScore = 0;
-    maxScore = 7;
+    // retrieve from document input the max score
+    maxScore = document.getElementById('points').value;
     difficulty = 0.3;
 
     paddleSpeed = 3;
@@ -45,6 +47,7 @@ export class Board extends GameObjectGroup {
 
     scoreSound;
     gameEndSound;
+    isGameEndend = false;
 
     constructor(globalContext) {
         super();
@@ -369,21 +372,24 @@ export class Board extends GameObjectGroup {
             this.resetPuck(0.5);
             this.resetPaddles();
         }
-
+        console.log('isGameEndend', this.isGameEndend);
         this.checkIfWin();
     }
 
     checkIfWin() {
         if (this.playerScore >= this.maxScore) {
-            !this.gameEndSound.isPlaying && this.gameEndSound.play();
+            // prevent to play sound multiple times
+            !this.isGameEndend && this.gameEndSound.play();
             this.resetPuck(0);
             this.resetPaddles();
             this.showWinMessage();
+            this.isGameEndend = true;
         } else if (this.opponentScore >= this.maxScore) {
-            !this.gameEndSound.isPlaying && this.gameEndSound.play();
+            !this.isGameEndend && this.gameEndSound.play();
             this.resetPuck(0);
             this.resetPaddles();
             this.showWinMessage();
+            this.isGameEndend = true;
         }
     }
 

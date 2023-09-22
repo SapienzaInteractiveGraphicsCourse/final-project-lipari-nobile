@@ -6,6 +6,16 @@ window.addEventListener('keydown', function (event) {
     Key.onKeydown(event);
 }, false);
 
+window.addEventListener('keydown', function (event) {
+    // prevent escape character to exit the modal
+    event.preventDefault();
+    const modal = document.getElementById("options");
+   if( event.key === "Escape"){
+        modal.open ? modal.close() : modal.showModal();
+    } 
+    
+})
+
 var Key = {
     _pressed: {},
 
