@@ -229,6 +229,12 @@ export function setup() {
     init();
 }
 
+/* buttons handler */
+export function handleModal () {
+    const modal = document.getElementById("options");
+    modal.open ? modal.close() : modal.showModal();
+}
+
 /*function initOld() {
     var tableMaterial =
         new THREE.MeshLambertMaterial({

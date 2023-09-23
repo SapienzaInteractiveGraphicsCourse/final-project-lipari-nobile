@@ -401,12 +401,14 @@ export class Board extends GameObjectGroup {
             this.resetPaddles();
             this.showWinMessage();
             this.isGameEndend = true;
+            document.getElementById('endgame').showModal();
         } else if (this.opponentScore >= this.maxScore) {
             !this.isGameEndend && this.gameEndSound.play();
             this.resetPuck(0);
             this.resetPaddles();
             this.showWinMessage();
             this.isGameEndend = true;
+            document.getElementById('endgame').showModal();
         }
     }
 
@@ -444,6 +446,8 @@ export class Board extends GameObjectGroup {
         messageGameObject.setRotation(new THREE.Vector3(0, 0, 1), -Math.PI / 2);
         messageGameObject.addToAll(this.scene, this.world);
         this.add(messageGameObject);
+
+        document.getElementById("textEndGame").innerHTML = message;
     }
 
     sync() {

@@ -416,16 +416,8 @@ function onPointerUp(globalContext) {
                         credits.close();
                     }
 
-                    // If it's already open, close it
-                    if (optionOpen) {
-                        optionOpen = false;
-                        options.close();
-                        return;
-                    }
+                    options.open ? options.close() : options.showModal();
 
-                    optionOpen = true;
-
-                    options.showModal();
                     break;
                 case 'credits':
                     // Close the options if it's open
@@ -434,16 +426,7 @@ function onPointerUp(globalContext) {
                         options.close();
                     }
 
-                    // If it's already open, close it
-                    if (creditsOpen) {
-                        creditsOpen = false;
-                        credits.close();
-                        return;
-                    }
-
-                    creditsOpen = true;
-
-                    credits.showModal();
+                    credits.open ? credits.close() : credits.showModal();
                     break;
                 default:
                     break;
