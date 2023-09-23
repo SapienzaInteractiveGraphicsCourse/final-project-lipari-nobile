@@ -238,7 +238,7 @@ export class Board extends GameObjectGroup {
     }
 
     createWall(x, y, z) {
-        let texture = new THREE.TextureLoader().load('../images/osb.jpg');
+        let texture = new THREE.TextureLoader().load('./images/osb.jpg');
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
         texture.repeat.set(x/y, y/x);
@@ -273,7 +273,7 @@ export class Board extends GameObjectGroup {
         let threeObject = new THREE.Mesh(
             new THREE.PlaneGeometry(x, y),
             new THREE.MeshPhongMaterial({
-                map: new THREE.TextureLoader().load('../images/table.jpg')
+                map: new THREE.TextureLoader().load('./images/table.jpg')
             })
         );
         let cannonObject = new CANNON.Body({
