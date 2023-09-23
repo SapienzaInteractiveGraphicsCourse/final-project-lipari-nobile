@@ -61,11 +61,11 @@ export class Board extends GameObjectGroup {
 
         this.font = globalContext.font;
 
-        this.add(this.createWall(this.fieldDepth, this.fieldHeight, this.fieldDepth)
+        this.add(this.createWall(this.fieldDepth, this.fieldHeight + 2 * this.fieldDepth, this.fieldDepth)
             .setPosition(0, -(this.fieldWidth / 2 + this.fieldDepth / 2), 0)
             .setRotation(new CANNON.Vec3(0, 0, 1), -Math.PI / 2));
 
-        this.add(this.createWall(this.fieldDepth, this.fieldHeight, this.fieldDepth)
+        this.add(this.createWall(this.fieldDepth, this.fieldHeight + 2 * this.fieldDepth, this.fieldDepth)
             .setPosition(0, (this.fieldWidth / 2 + this.fieldDepth / 2), 0)
             .setRotation(new CANNON.Vec3(0, 0, 1), Math.PI / 2));
 
@@ -242,10 +242,14 @@ export class Board extends GameObjectGroup {
     }
 
     createWall(x, y, z) {
+        let texture = new THREE.TextureLoader().load('../images/osb.jpg');
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(x/y, y/x);
         let threeObject = new THREE.Mesh(
             new THREE.BoxGeometry(x, y, z),
-            new THREE.MeshLambertMaterial({
-                color: 0x0090ff
+            new THREE.MeshPhongMaterial({
+                map: texture
             })
         );
         let cannonObject = new CANNON.Body({
@@ -272,7 +276,7 @@ export class Board extends GameObjectGroup {
     createSurfacePlane(x, y) {
         let threeObject = new THREE.Mesh(
             new THREE.PlaneGeometry(x, y),
-            new THREE.MeshBasicMaterial({
+            new THREE.MeshPhongMaterial({
                 map: new THREE.TextureLoader().load('../images/table.jpg')
             })
         );
