@@ -11,7 +11,7 @@ export class Puck extends GameObject {
         var radius = 10;
 
         var puckMaterial =
-            new THREE.MeshLambertMaterial({
+            new THREE.MeshPhongMaterial({
                 color: 0xD43001
             });
 

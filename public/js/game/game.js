@@ -44,7 +44,6 @@ function init() {
 
 function createScene(globalContext) {
     const scene = new THREE.Scene();
-    scene.add(new THREE.AxesHelper(100));
     
     globalContext.scene = scene;
 
@@ -69,10 +68,6 @@ function createDebugRenderer(globalContext) {
         scene
     } = globalContext;
 
-    const cannonDebugger = new CannonDebugger(scene, world);
-
-    globalContext.cannonDebugger = cannonDebugger;
-
     return globalContext;
 }
 
@@ -81,7 +76,11 @@ function addLightsToScene(globalContext) {
         scene
     } = globalContext;
 
-    scene.add(new THREE.AmbientLight(0x404040, 10));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+    let spotLight = new THREE.SpotLight(0xffffff, 4, 0, Math.PI / 4, 0.7, 0);
+    spotLight.position.set(0, 0, 200);
+    scene.add(spotLight);
 
     return globalContext;
 }
@@ -109,7 +108,7 @@ function createCamera(globalContext) {
             0.1,
             10000);
 
-    camera.position.set(-400, 0, 300);
+    camera.position.set(-350, 0, 350);
     camera.setRotationFromEuler(new THREE.Euler(-50 * Math.PI / 180, 90 * Math.PI / 180, 0, 'XYZ'));
     camera.up = new THREE.Vector3(0, 0, 1);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
@@ -131,6 +130,10 @@ async function createAudio(globalContext, audioTitle) {
     sound.setBuffer(audioBuffer);
     sound.setLoop(false);
     sound.setVolume(1);
+
+    if (audioTitle === "puck_hit") {
+        sound.playbackRate = 2.5;
+    }
 
     globalContext[audioTitle] = sound;
 
@@ -215,8 +218,6 @@ function draw(globalContext) {
         world.step(1);
 
         board.sync();
-
-        if (cannonDebugger) cannonDebugger.update();
 
         renderer.render(scene, camera);
         requestAnimationFrame(render);

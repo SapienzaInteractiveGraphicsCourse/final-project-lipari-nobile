@@ -48,7 +48,7 @@ export class Paddle extends GameObject {
 
         var threePaddleCap = new THREE.Mesh(
             new THREE.SphereGeometry(radius / 4),
-            new THREE.MeshLambertMaterial({
+            new THREE.MeshPhongMaterial({
                 color: 0x1B32F0
             })
         );
