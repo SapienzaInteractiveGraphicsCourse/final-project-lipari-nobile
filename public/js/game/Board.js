@@ -394,6 +394,8 @@ export class Board extends GameObjectGroup {
     }
 
     checkIfWin() {
+        const endModal = document.getElementById('endgame');
+        console.log(this.opponentScore)
         if (this.playerScore >= this.maxScore) {
             // prevent to play sound multiple times
             !this.isGameEndend && this.gameEndSound.play();
@@ -401,14 +403,14 @@ export class Board extends GameObjectGroup {
             this.resetPaddles();
             this.showWinMessage();
             this.isGameEndend = true;
-            document.getElementById('endgame').showModal();
+            endModal.showModal();
         } else if (this.opponentScore >= this.maxScore) {
             !this.isGameEndend && this.gameEndSound.play();
             this.resetPuck(0);
             this.resetPaddles();
             this.showWinMessage();
             this.isGameEndend = true;
-            document.getElementById('endgame').showModal();
+            endModal.showModal();
         }
     }
 
@@ -424,6 +426,15 @@ export class Board extends GameObjectGroup {
 
         this.gameObjects.find(x => x.name == "opponentPaddle")
             .setPosition(this.fieldHeight / 2 - 20, 0, 5);
+    }
+
+    resetBoard() {
+        // reset all the variables
+        this.playerScore = 0;
+        this.opponentScore = 0;
+        this.isGameEndend = false;
+        this.updateScore();
+        this.resetPuck(1);
     }
 
     showWinMessage() {
@@ -444,8 +455,8 @@ export class Board extends GameObjectGroup {
         var messageGameObject = new GameObject("message", messageObject, null);
         messageGameObject.setPosition(0, 0, 10);
         messageGameObject.setRotation(new THREE.Vector3(0, 0, 1), -Math.PI / 2);
-        messageGameObject.addToAll(this.scene, this.world);
-        this.add(messageGameObject);
+        //messageGameObject.addToAll(this.scene, this.world);
+        //this.add(messageGameObject);
 
         document.getElementById("textEndGame").innerHTML = message;
     }

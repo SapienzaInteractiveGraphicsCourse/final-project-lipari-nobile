@@ -183,6 +183,9 @@ function createBoard(globalContext) {
 
 function addEventListeners(globalContext) {
     window.addEventListener('resize', onWindowResize(globalContext));
+    document.getElementById("settings").addEventListener('click', handleModal);
+    document.getElementById('retry').addEventListener('click', handleRetry(globalContext));
+    document.getElementById("main").addEventListener('click', handleMainMenu(globalContext));
 
     window.addEventListener('keydown', function (event) {
         // prevent escape character to exit the modal
@@ -243,9 +246,41 @@ export function setup() {
 }
 
 /* buttons handler */
-export function handleModal () {
+function handleModal () {
     const modal = document.getElementById("options");
     modal.open ? modal.close() : modal.showModal();
+}
+
+function handleRetry (globalContext) {
+    const {
+        board
+    } = globalContext;
+
+    return () => {
+        // restart the game
+        board.resetBoard();
+        const modal = document.getElementById("endgame");
+        modal.close();
+    }
+}
+
+function handleMainMenu (globalContext) {
+    // go back to main menu
+    const {
+        board
+    } = globalContext;
+    
+    return () => {
+        const canvas = document.getElementById("gameContainer");
+        canvas.style.display = "none"
+
+        const menu = document.getElementById("menuContainer");
+        menu.style.display = "flex";
+
+        const modal = document.getElementById("endgame");
+        modal.close();
+    }
+
 }
 
 /*function initOld() {
