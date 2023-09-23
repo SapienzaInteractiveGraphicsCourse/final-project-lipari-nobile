@@ -177,7 +177,6 @@ export class Board extends GameObjectGroup {
             vertex.fromBufferAttribute(position, i);
 
             let x = (220 - vertex.x);
-            console.log(x);
 
             const skinIndex = Math.floor(x / segmentLength);
             const skinWeight = (x % segmentLength) / segmentLength;
@@ -185,9 +184,6 @@ export class Board extends GameObjectGroup {
             skinIndices.push(skinIndex, skinIndex + 1, 0, 0);
             skinWeights.push(1 - skinWeight, skinWeight, 0, 0);
         }
-
-        console.log(skinIndices);
-        console.log(skinWeights);
 
         geometry.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(skinIndices, 4));
         geometry.setAttribute('skinWeight', new THREE.Float32BufferAttribute(skinWeights, 4));

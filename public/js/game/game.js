@@ -11,6 +11,8 @@ import {
     loadAudioBuffer
 } from '../utils/AssetLoader.js';
 
+let running = true;
+
 function init() {
     let globalContext = {};
 
@@ -182,6 +184,16 @@ function createBoard(globalContext) {
 function addEventListeners(globalContext) {
     window.addEventListener('resize', onWindowResize(globalContext));
 
+    window.addEventListener('keydown', function (event) {
+        // prevent escape character to exit the modal
+        event.preventDefault();
+        const modal = document.getElementById("options");
+        if (event.key === "Escape") {
+            modal.open ? modal.close() : modal.showModal();
+            running = !running
+        }
+    })
+
     return globalContext;
 }
 
@@ -207,20 +219,20 @@ function draw(globalContext) {
         scene,
         renderer,
         world,
-        cannonDebugger,
         board
     } = globalContext;
 
     function render() {
-
-        board.update();
+        if (running) {
+            board.update();
         
-        world.step(1);
+            world.step(1);
 
-        board.sync();
+            board.sync();
 
-        renderer.render(scene, camera);
-        requestAnimationFrame(render);
+            renderer.render(scene, camera);
+        }
+        globalContext.animFrameId = requestAnimationFrame(render);
     }
 
     render();
