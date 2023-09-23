@@ -5,10 +5,14 @@ import {
     GameObject
 } from './GameObject.js';
 
-export class RobotArm extends GameObject {
+export class RobotArm {
     targetPosition;
     constructor({targetPosition, name, scene}) {
         let bones = []
+
+        let armHeight = 220;
+        let segments = 2;
+        let segmentSize = armHeight / segments;
 
         // "root"
         let rootBone = new THREE.Bone();
@@ -19,13 +23,14 @@ export class RobotArm extends GameObject {
 
         // "bone0"
         let prevBone = new THREE.Bone();
+        prevBone.position.y = 0;
         rootBone.add(prevBone);
         bones.push(prevBone);
 
         // "bone1", "bone2", "bone3"
-        for (let i = 1; i <= 10; i++) {
+        for (let i = 1; i <= segments; i++) {
             const bone = new THREE.Bone();
-            bone.position.z = 12;
+            bone.position.z = segmentSize;
             bones.push(bone);
 
             prevBone.add(bone);
@@ -34,7 +39,8 @@ export class RobotArm extends GameObject {
 
         // "target"
         const targetBone = new THREE.Bone();
-        targetBone.position.z = 120;
+        this.ikTarget = targetBone;
+        targetBone.position.z = armHeight + segmentSize;
         rootBone.add(targetBone);
         bones.push(targetBone);
 
@@ -44,15 +50,15 @@ export class RobotArm extends GameObject {
         let geometry = new THREE.CylinderGeometry(
             5, // radiusTop
             5, // radiusBottom
-            120, // height
-            12, // radiusSegments
-            10, // heightSegments
+            armHeight, // height
+            8, // radiusSegments
+            segments, // heightSegments
             true // openEnded
         )
 
         geometry.translate(220, 0, 0);
         geometry.rotateX(Math.PI / 2);
-        geometry.translate(0, 0, 65);
+        geometry.translate(0, 0, (armHeight)/2 + 5);
         const position = geometry.attributes.position;
 
         const vertex = new THREE.Vector3();
@@ -64,25 +70,28 @@ export class RobotArm extends GameObject {
 
             vertex.fromBufferAttribute(position, i);
 
-            const y = (vertex.y + 60);
+            const y = (vertex.z + armHeight/2);
 
-            const skinIndex = Math.floor(y / 12);
-            const skinWeight = (y % 12) / 12;
+            const skinIndex = Math.floor(y / segmentSize);
+            const skinWeight = (y % segmentSize) / segmentSize;
 
             skinIndices.push(skinIndex, skinIndex + 1, 0, 0);
             skinWeights.push(1 - skinWeight, skinWeight, 0, 0);
-
         }
 
         geometry.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(skinIndices, 4));
         geometry.setAttribute('skinWeight', new THREE.Float32BufferAttribute(skinWeights, 4));
 
-        const material = new THREE.MeshPhongMaterial({
+        let material = new THREE.MeshPhongMaterial({
             color: 0x156289,
             emissive: 0x072534,
             side: THREE.DoubleSide,
             flatShading: true,
             wireframe: true
+        });
+
+        material = new THREE.MeshLambertMaterial({
+            color: 0xff9000
         });
 
         const mesh = new THREE.SkinnedMesh(geometry, material);
@@ -91,39 +100,23 @@ export class RobotArm extends GameObject {
         mesh.add(bones[0]); // "root" bone
         mesh.bind(skeleton);
 
-        super(name, mesh, null);
+        scene.add(mesh);
 
         let skeletonHelper = new THREE.SkeletonHelper(mesh);
         skeletonHelper.material.linewidth = 2;
         scene.add(skeletonHelper);
 
         const iks = [{
-            target: 12, // "target"
-            effector: 11, // "bone3"
+            target: 4, // "target"
+            effector: 3, // "bone3"
             links: [{
-                index: 10,
-            }, {
-                index: 9,
-            }, {
-                index: 8,
-            }, {
-                index: 7,
-            }, {
-                index: 6,
-            }, {
-                index: 5,
-            }, {
-                index: 4,
-            }, {
-                index: 3
-            }, {
                 index: 2
             }, {
                 index: 1
             }] // "bone2", "bone1", "bone0"
         }];
         this.ikSolver = new CCDIKSolver(mesh, iks);
-        scene.add(new CCDIKHelper(mesh, iks));
+        scene.add( new CCDIKHelper( mesh, iks ) );
 
         this.ikTarget = targetBone;
         this.targetPosition = targetPosition;

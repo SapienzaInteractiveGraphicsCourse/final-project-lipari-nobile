@@ -30,46 +30,48 @@
     </audio>
     <div id="menuContainer">
         <div id="menuCanvas"></div>
-        <dialog id="options">
-            <div class="header">
-                <h2>Options</h2>
-                <b id="closeOptions">X</b>
-            </div> 
-            <hr>
-            <div class="menu">
-                <div class="option">
-                    <h3>Difficulty</h3>
-                    <input type="radio" id="easy" name="difficulty" value="easy" checked>
-                    <label for="easy">Easy</label><br>
-                    <input type="radio" id="medium" name="difficulty" value="medium">
-                    <label for="medium">Medium</label><br>
-                    <input type="radio" id="hard" name="difficulty" value="hard">
-                    <label for="hard">Hard</label>
-                </div>
-                <div class="option">
-                    <h3>In game</h3>
-                    1 <input type="range" id="points" name="points" min="1" max="10" value="4">10 points
-                    <br>
-                    10<input type="range" id="seconds" name="points" min="1" max="10" value="7">60 seconds
-                </div>
-                <div class="option">
-                    <h3>Volume</h3>
-                    0 <input type="range" id="volume" name="points" min="0" max="100" value="100">100
-                    <br>
-                </div>
-            </div>
-        </dialog>
-        <dialog id="credits" modal-mode="mega">
-            <div class="header">
-                <h2>Credits</h2>
-                <b id="closeCredits">X</b>
-            </div>
-            <hr>
-            <div class="credit">
-                Game Developed by Gian Marco Nobile and Alfredo Lipari
-            </div>
-        </dialog>
     </div>
+    <dialog id="options">
+        <div class="header">
+            <h2>Options</h2>
+            <b id="closeOptions">X</b>
+        </div> 
+        <hr>
+        <div class="menu">
+            <div class="option">
+                <h3>Difficulty</h3>
+                <input type="radio" id="easy" name="difficulty" value="0.1" checked>
+                <label for="easy">Easy</label><br>
+                <input type="radio" id="medium" name="difficulty" value="0.3">
+                <label for="medium">Medium</label><br>
+                <input type="radio" id="hard" name="difficulty" value="0.5">
+                <label for="hard">Hard</label><br>
+                <input type="radio" id="impossible" name="difficulty" value="0.7">
+                <label for="impossible">Impossible</label>
+            </div>
+            <div class="option">
+                <h3>In game</h3>
+                1 <input type="range" id="points" name="points" min="1" max="10" value="4">10 points
+                <br>
+                10<input type="range" id="seconds" name="points" min="1" max="10" value="7">60 seconds
+            </div>
+            <div class="option">
+                <h3>Volume</h3>
+                0 <input type="range" id="volume" name="points" min="0" max="100" value="100">100
+                <br>
+            </div>
+        </div>
+    </dialog>
+    <dialog id="credits" modal-mode="mega">
+        <div class="header">
+            <h2>Credits</h2>
+            <b id="closeCredits">X</b>
+        </div>
+        <hr>
+        <div class="credit">
+            Game Developed by Gian Marco Nobile and Alfredo Lipari
+        </div>
+    </dialog>
 
     <div id="gameContainer">
         <div id='gameCanvas'></div>

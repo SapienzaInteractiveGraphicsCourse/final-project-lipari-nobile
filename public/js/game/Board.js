@@ -34,6 +34,7 @@ export class Board extends GameObjectGroup {
     opponentScore = 0;
     // retrieve from document input the max score
     maxScore = document.getElementById('points').value;
+    
     difficulty = 0.3;
 
     paddleSpeed = 3;
@@ -51,6 +52,12 @@ export class Board extends GameObjectGroup {
 
     constructor(globalContext) {
         super();
+
+        let ele = document.getElementsByName('difficulty');
+        for (let i = 0; i < ele.length; i++) {
+            if (ele[i].checked)
+                this.difficulty = ele[i].value / 2;
+        }
 
         this.font = globalContext.font;
 
@@ -105,29 +112,31 @@ export class Board extends GameObjectGroup {
             })
             .setPosition(this.fieldHeight / 2 - 20, 0, 5));
 
+        this.add(this.createWall(20, 20, 60)
+            .setPosition((this.fieldHeight / 2 + this.fieldDepth / 2) + 15, 0, 25));
+
         let bones = []
 
-        let armHeight = 220;
+        let armLength = 220;
         let segments = 2;
-        let segmentSize = armHeight / segments;
+        let segmentLength = armLength / segments;
 
         // "root"
         let rootBone = new THREE.Bone();
-        rootBone.position.x = 220;
+        rootBone.position.x = 210;
         rootBone.position.y = 0;
-        rootBone.position.z = 5;
+        rootBone.position.z = 40;
         bones.push(rootBone);
 
         // "bone0"
         let prevBone = new THREE.Bone();
-        prevBone.position.y = 0;
         rootBone.add(prevBone);
         bones.push(prevBone);
 
         // "bone1", "bone2", "bone3"
         for (let i = 1; i <= segments; i++) {
             const bone = new THREE.Bone();
-            bone.position.z = segmentSize;
+            bone.position.x = -segmentLength;
             bones.push(bone);
 
             prevBone.add(bone);
@@ -137,7 +146,7 @@ export class Board extends GameObjectGroup {
         // "target"
         const targetBone = new THREE.Bone();
         this.ikTarget = targetBone;
-        targetBone.position.z = armHeight + segmentSize;
+        targetBone.position.x = - (armLength + segmentLength);
         rootBone.add(targetBone);
         bones.push(targetBone);
 
@@ -147,15 +156,15 @@ export class Board extends GameObjectGroup {
         let geometry = new THREE.CylinderGeometry(
             5, // radiusTop
             5, // radiusBottom
-            armHeight, // height
+            armLength, // height
             8, // radiusSegments
             segments, // heightSegments
-            true // openEnded
+            false // openEnded
         )
 
-        geometry.translate(220, 0, 0);
-        geometry.rotateX(Math.PI / 2);
-        geometry.translate(0, 0, (armHeight)/2 + 5);
+        //geometry.translate(0, 10.0, 0);
+        geometry.rotateZ(Math.PI / 2);
+        geometry.translate(105, 0, 40);
         const position = geometry.attributes.position;
 
         const vertex = new THREE.Vector3();
@@ -167,15 +176,18 @@ export class Board extends GameObjectGroup {
 
             vertex.fromBufferAttribute(position, i);
 
-            const y = (vertex.z + armHeight/2);
+            let x = (220 - vertex.x);
+            console.log(x);
 
-            const skinIndex = Math.floor(y / segmentSize);
-            const skinWeight = (y % segmentSize) / segmentSize;
+            const skinIndex = Math.floor(x / segmentLength);
+            const skinWeight = (x % segmentLength) / segmentLength;
 
             skinIndices.push(skinIndex, skinIndex + 1, 0, 0);
             skinWeights.push(1 - skinWeight, skinWeight, 0, 0);
-
         }
+
+        console.log(skinIndices);
+        console.log(skinWeights);
 
         geometry.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(skinIndices, 4));
         geometry.setAttribute('skinWeight', new THREE.Float32BufferAttribute(skinWeights, 4));
@@ -189,7 +201,7 @@ export class Board extends GameObjectGroup {
         });
 
         material = new THREE.MeshLambertMaterial({
-            color: 0x0090ff
+            color: 0xff9000
         });
 
         const mesh = new THREE.SkinnedMesh(geometry, material);
@@ -215,6 +227,12 @@ export class Board extends GameObjectGroup {
         }];
         this.ikSolver = new CCDIKSolver(mesh, iks);
         globalContext.scene.add( new CCDIKHelper( mesh, iks ) );
+
+        /*this.robotArm = new RobotArm({
+            targetPosition: new THREE.Vector3(0, 0, 0),
+            name: "robotArm",
+            scene: globalContext.scene,
+        });*/
 
         this.scoreSound = globalContext["goal"]
 
@@ -340,18 +358,18 @@ export class Board extends GameObjectGroup {
         this.gameObjects.find(x => x.name == "puck")
             .update();
 
-        this.ikTarget.position.x = this.gameObjects.find(x => x.name == "opponentPaddle").threeObject.position.x - 220;
+        this.ikTarget.position.x = this.gameObjects.find(x => x.name == "opponentPaddle").threeObject.position.x - 210;
         this.ikTarget.position.y = this.gameObjects.find(x => x.name == "opponentPaddle").threeObject.position.y;
-        this.ikTarget.position.z = this.gameObjects.find(x => x.name == "opponentPaddle").threeObject.position.z + 5;
+        this.ikTarget.position.z = this.gameObjects.find(x => x.name == "opponentPaddle").threeObject.position.z - 40;
         this.ikSolver.update();
 
-        /*this.gameObjects.find(x => x.name == "robotArm")
-            .update();*/
-        /*.updateTargetPosition(
-            this.gameObjects.find(x => x.name == "opponentPaddle").cannonObject.position.x,
-            this.gameObjects.find(x => x.name == "opponentPaddle").cannonObject.position.y,
-            this.gameObjects.find(x => x.name == "opponentPaddle").cannonObject.position.z
-        );*/
+        /*this.robotArm.setTargetPosition(
+            this.gameObjects.find(x => x.name == "opponentPaddle").threeObject.position.x - 220,
+            this.gameObjects.find(x => x.name == "opponentPaddle").threeObject.position.y,
+            this.gameObjects.find(x => x.name == "opponentPaddle").threeObject.position.z + 5
+        );
+
+        this.robotArm.update();*/
     }
 
     checkIfScored() {
@@ -372,7 +390,6 @@ export class Board extends GameObjectGroup {
             this.resetPuck(0.5);
             this.resetPaddles();
         }
-        console.log('isGameEndend', this.isGameEndend);
         this.checkIfWin();
     }
 

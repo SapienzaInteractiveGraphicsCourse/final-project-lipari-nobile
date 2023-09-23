@@ -10,7 +10,7 @@ window.addEventListener('keydown', function (event) {
     // prevent escape character to exit the modal
     event.preventDefault();
     const modal = document.getElementById("options");
-   if( event.key === "Escape"){
+    if (event.key === "Escape") {
         modal.open ? modal.close() : modal.showModal();
     } 
     
