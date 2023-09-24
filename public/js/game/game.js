@@ -27,10 +27,10 @@ function init(menuScene) {
     globalContext.canvas.height = window.innerHeight;
 
     loadFont(globalContext)
-        .then(() => loadAudioBuffer(globalContext, 'sounds/game_end.mp3'))
-        .then(() => loadAudioBuffer(globalContext, 'sounds/game_start.mp3'))
-        .then(() => loadAudioBuffer(globalContext, 'sounds/goal.mp3'))
-        .then(() => loadAudioBuffer(globalContext, 'sounds/puck_hit.mp3'))
+        .then(() => loadAudioBuffer(globalContext, './public/sounds/game_end.mp3'))
+        .then(() => loadAudioBuffer(globalContext, './public/sounds/game_start.mp3'))
+        .then(() => loadAudioBuffer(globalContext, './public/sounds/goal.mp3'))
+        .then(() => loadAudioBuffer(globalContext, './public/sounds/puck_hit.mp3'))
         .then(createScene)
         .then(createWorld)
         .then(addLightsToScene)

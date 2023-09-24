@@ -52,7 +52,7 @@ function init() {
     globalContext.creditsOpen = false;
 
     loadFont(globalContext)
-        .then(() => loadAudioBuffer(globalContext, "sounds/BOX_15.mp3"))
+        .then(() => loadAudioBuffer(globalContext, "./public/sounds/BOX_15.mp3"))
         .then(createScene)
         .then(addLightsToScene)
         .then(createCamera)
