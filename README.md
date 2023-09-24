@@ -11,7 +11,7 @@ Alfredo Lipari, matricola: 2084896
 
 ```
 
-### [Click here to play the game](./final-project-lipari-nobile/)
+### [Click here to play the game](https://sapienzainteractivegraphicscourse.github.io/final-project-lipari-nobile/)
 
 ## Report
 
@@ -20,3 +20,4 @@ The report can be reached through this [link](./ProjectReport.pdf)
 ## Instructions
 
 Move the player paddle by the WASD keys
+Press ESC to pause the game
