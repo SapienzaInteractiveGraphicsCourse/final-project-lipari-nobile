@@ -7,6 +7,10 @@ import {
 } from '../game/game.js'
 
 import {
+    CustomScene
+} from '../utils/CustomScene.js';
+
+import {
     TextBox,
     toggleBevelEnabled
 } from './TextBox.js';
@@ -20,7 +24,6 @@ let pointerDown = false;
 let targetRotation = 0;
 let targetRotationOnPointerDown = 0;
 let pointerXOnPointerDown = 0;
-let animationFrameId;
 
 document.getElementById("closeOptions").addEventListener("click", () => {
     document.getElementById("options").close();
@@ -30,7 +33,7 @@ document.getElementById("closeCredits").addEventListener("click", () => {
     document.getElementById("credits").close();
 });
 
-init();
+window.onload = init;
 
 function init() {
     let globalContext = {};
@@ -44,9 +47,6 @@ function init() {
 
     globalContext.menuContainer = document.getElementById('menuContainer');
 
-    globalContext.raycaster = new THREE.Raycaster();
-    globalContext.mouse = new THREE.Vector2(1, 1);
-
     globalContext.optionOpen = false;
     globalContext.creditsOpen = false;
 
@@ -57,7 +57,6 @@ function init() {
         .then(createCamera)
         .then(() => createAudio(globalContext, "BOX_15"))
         .then(createText)
-        .then(createRenderer)
         .then(createGUI)
         .then(addEventListeners)
         .then(draw)
@@ -67,7 +66,12 @@ function init() {
 }
 
 function createScene(globalContext) {
-    const scene = new THREE.Scene();
+    //const scene = new THREE.Scene();
+
+    const scene = new CustomScene({
+        canvas: globalContext.canvas
+    });
+
     scene.fog = new THREE.Fog(0x000000, 250, 1400);
 
     globalContext.scene = scene;
@@ -96,30 +100,25 @@ function addLightsToScene(globalContext) {
 
 function createCamera(globalContext) {
     const {
-        canvas
+        canvas,
+        scene
     } = globalContext;
 
     const camera = new THREE.PerspectiveCamera(35, canvas.clientWidth / canvas.clientHeight, 0.1, 2000);
     camera.position.set(0, 0, 800);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-    globalContext.camera = camera;
+    scene.setCamera(camera);
 
     return globalContext;
 }
 
 async function createAudio(globalContext, audioTitle) {
     const audioBuffer = globalContext[audioTitle];
-    const listener = new THREE.AudioListener();
-    listener.setMasterVolume(0.05);
 
-    globalContext.listener = listener;
+    globalContext.listener = globalContext.scene.getListener();
 
-    console.log(globalContext)
-
-    globalContext.camera.add(listener);
-
-    const sound = new THREE.Audio(listener);
+    const sound = new THREE.Audio(globalContext.listener);
 
     globalContext.sound = sound;
 
@@ -199,24 +198,6 @@ function createText(globalContext) {
     return globalContext;
 }
 
-function createRenderer(globalContext) {
-    const {
-        canvas
-    } = globalContext;
-
-    let renderer = new THREE.WebGLRenderer({
-        antialias: true,
-        alpha: true
-    }); // alpha turn background transparent
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-    canvas.appendChild(renderer.domElement);
-
-    globalContext.renderer = renderer;
-
-    return globalContext;
-}
-
 function createGUI(globalContext) {
     const {
         listener,
@@ -241,12 +222,12 @@ function createGUI(globalContext) {
 
     const gui = new GUI();
     const textFolder = gui.addFolder('Text');
-    const volumeFolder = gui.addFolder('Volume');
+    //const volumeFolder = gui.addFolder('Volume');
 
     textFolder.add(textControls, 'changeBevel').name('change bevel');
     textFolder.add(textControls, 'changeColor').name('change color');
 
-    volumeFolder.add(soundControls, 'master')
+    /*volumeFolder.add(soundControls, 'master')
         .min(0.0)
         .max(0.4)
         .step(0.01)
@@ -261,7 +242,7 @@ function createGUI(globalContext) {
             } else {
                 sound.pause();
             }
-        });
+        });*/
 
     globalContext.gui = gui;
 
@@ -272,61 +253,28 @@ function addEventListeners(globalContext) {
     const {
         canvas,
         sound,
-        listener
+        scene
     } = globalContext;
 
     canvas.style.touchAction = 'none';
-    window.addEventListener('resize', onWindowResize(globalContext));
-    canvas.addEventListener('mousemove', onMouseMove(globalContext));
     canvas.addEventListener('pointerdown', onPointerDown(globalContext));
     canvas.addEventListener('pointermove', onPointerMove(globalContext));
     canvas.addEventListener('pointerup', onPointerUp(globalContext));
 
     document.getElementById('volume').addEventListener('input', (event) => {
-        console.log(event)
         const volume = event.target.value / 100;
-        console.log(volume)
-        sound.setVolume(volume);
-        listener.setMasterVolume(volume);
+        scene.setMasterVolume(volume);
+    })
+
+    document.getElementById('audioOnOff').addEventListener('input', (event) => {
+        if (event.target.checked) {
+            sound.play();
+        } else {
+            sound.pause();
+        }
     })
 
     return globalContext;
-}
-
-function onWindowResize(globalContext) {
-    const {
-        canvas,
-        camera,
-        renderer
-    } = globalContext;
-
-    return () => {
-        camera.aspect = canvas.clientWidth / canvas.clientHeight;
-
-        camera.updateProjectionMatrix();
-
-        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-    }
-}
-
-function onMouseMove(globalContext) {
-    const {
-        canvas,
-        renderer,
-        mouse
-    } = globalContext;
-
-    // Calculate mouse position in normalized device coordinates
-    // (-1 to +1) for both components
-
-    return (event) => {
-        const rect = renderer.domElement.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-
-        mouse.x = (x / canvas.clientWidth) * 2 - 1;
-        mouse.y = -(y / canvas.clientHeight) * 2 + 1;
-    }
 }
 
 function onPointerDown(globalContext) {
@@ -368,10 +316,7 @@ function onPointerMove(globalContext) {
 
 function onPointerUp(globalContext) {
     let {
-        camera,
         scene,
-        raycaster,
-        mouse,
         gui,
         options,
         optionOpen,
@@ -386,8 +331,7 @@ function onPointerUp(globalContext) {
 
         pointerDown = false;
 
-        raycaster.setFromCamera(mouse, camera)
-        const intersectes = raycaster.intersectObjects(scene.children);
+        const intersectes = scene.getIntersects();
 
         if (intersectes.length !== 0) {
             const firstIntersect = intersectes[0].object.parent;
@@ -397,12 +341,11 @@ function onPointerUp(globalContext) {
                     // Hide the menu
                     menuContainer.style.display = 'none';
 
-                    mouse = new THREE.Vector2(1, 1);
-                    cancelAnimationFrame(animationFrameId);
+                    scene.stopAnimationLoop();
 
                     // Start the game
                     document.getElementById('gameContainer').style.display = 'flex';
-                    setup();
+                    setup(scene);
 
                     // Close the GUI
                     gui.hide()
@@ -447,40 +390,22 @@ function refreshText(globalContext) {
 
 function draw(globalContext) {
     const {
-        camera,
-        scene,
-        renderer,
-        mouse
+        scene
     } = globalContext;
 
-    function render() {
+    scene.startAnimationLoop(() => {
         hoverButton(globalContext);
-        animationFrameId = requestAnimationFrame(render);
-
-        //move text based on mouse position
-        //scene.getObjectByName("textGroup").rotation.x = -mouse.y;
-        //scene.getObjectByName("textGroup").rotation.y = mouse.x;
 
         scene.getObjectByName("textGroup").rotation.y += (targetRotation - scene.getObjectByName("textGroup").rotation.y) * 0.05;
-
-        renderer.clear();
-        renderer.render(scene, camera);
-    }
-
-    render();
+    });
 }
 
 function hoverButton(globalContext) {
     const {
-        camera,
-        scene,
-        raycaster,
-        mouse
+        scene
     } = globalContext;
 
-    raycaster.setFromCamera(mouse, camera);
-
-    const intersectes = raycaster.intersectObjects(scene.children);
+    const intersectes = scene.getIntersects();
 
     if (intersectes.length === 0) {
         scene.getObjectByName("textGroup").children.filter(x => x.name !== 'title').forEach(child => {

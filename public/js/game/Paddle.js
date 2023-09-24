@@ -20,7 +20,7 @@ export class Paddle extends GameObject {
                 radius / 2,
                 paddleHeigth / 2),
             new THREE.MeshLambertMaterial({
-                color: 0x1B32C0
+                color: 0x1B32F0
             })
         );
 
@@ -35,13 +35,13 @@ export class Paddle extends GameObject {
                 radius / 4,
                 paddleHeigth),
             new THREE.MeshLambertMaterial({
-                color: 0x1B32A0
+                color: 0x1B32F0
             })
         );
 
         threePaddleTop.receiveShadow = true;
         threePaddleTop.castShadow = true;
-        threePaddleTop.position.y = paddleHeigth;
+        threePaddleTop.position.y = paddleHeigth * 3 / 4;
 
         threePaddleGroup.add(threePaddleTop);
 
@@ -55,7 +55,7 @@ export class Paddle extends GameObject {
 
         threePaddleCap.receiveShadow = true;
         threePaddleCap.castShadow = true;
-        threePaddleCap.position.y = paddleHeigth * 3 / 2;
+        threePaddleCap.position.y = paddleHeigth * 5 / 4;
 
         threePaddleGroup.add(threePaddleCap);
 
