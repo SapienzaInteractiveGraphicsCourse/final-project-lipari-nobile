@@ -6,7 +6,7 @@ import {
 
 export async function loadFont(globalContext) {
     const font = await new FontLoader()
-        .loadAsync('./public/fonts/Nunito.json');
+        .loadAsync('../../fonts/Nunito.json');
     
     globalContext.font = font;
 
