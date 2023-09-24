@@ -1,7 +1,8 @@
-import * as THREE from 'three';
+import * as THREE from '../vendor/three.module.min.js';
+
 import {
     GUI
-} from 'three/addons/libs/lil-gui.module.min.js';
+} from '../vendor/lil-gui.module.min.js';
 import {
     setup
 } from '../game/game.js'

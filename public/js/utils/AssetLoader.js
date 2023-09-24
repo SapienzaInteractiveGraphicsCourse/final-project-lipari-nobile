@@ -1,7 +1,8 @@
-import * as THREE from 'three';
+import * as THREE from '../vendor/three.module.min.js';
+
 import {
     FontLoader
-} from 'three/addons/loaders/FontLoader.js';
+} from '../vendor/FontLoader.js';
 
 export async function loadFont(globalContext) {
     const font = await new FontLoader()

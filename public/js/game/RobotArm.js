@@ -1,5 +1,6 @@
-import * as THREE from 'three';
-import { CCDIKSolver, CCDIKHelper } from 'three/addons/animation/CCDIKSolver.js';
+import * as THREE from '../vendor/three.module.min.js';
+
+import { CCDIKSolver } from '../vendor/CCDIKSolver.js';
 
 export class RobotArm {
     constructor({name, scene}) {

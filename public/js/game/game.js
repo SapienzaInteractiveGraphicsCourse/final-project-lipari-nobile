@@ -1,5 +1,6 @@
-import * as THREE from 'three';
-import * as CANNON from 'cannon-es';
+import * as THREE from '../vendor/three.module.min.js';
+
+import * as CANNON from '../vendor/cannon-es.js';
 
 import {
     Board
@@ -100,8 +101,6 @@ function createCamera(globalContext) {
     camera.up = new THREE.Vector3(0, 0, 1);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
     scene.setCamera(camera);
-
-    scene.addOrbitControls();
 
     return globalContext;
 }

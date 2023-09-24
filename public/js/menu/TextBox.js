@@ -1,7 +1,8 @@
-import * as THREE from 'three';
+import * as THREE from '../vendor/three.module.min.js';
+
 import {
     TextGeometry
-} from 'three/addons/geometries/TextGeometry.js';
+} from '../vendor/TextGeometry.js';
 
 
 let bevelEnabled = true;

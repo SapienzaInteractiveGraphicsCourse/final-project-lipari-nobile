@@ -1,6 +1,4 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import CannonDebugger from 'cannon-es-debugger';
+import * as THREE from '../vendor/three.module.min.js';
 
 export class CustomScene extends THREE.Scene {
     #animationLoopFunction;
@@ -55,9 +53,8 @@ export class CustomScene extends THREE.Scene {
         return this;
     }
 
-    setWorld(world, debug) {
+    setWorld(world) {
         this.#world = world;
-        if (debug) this.addCannonDebug();
         return this;
     }
 
@@ -69,15 +66,6 @@ export class CustomScene extends THREE.Scene {
         this.#listener.setMasterVolume(volume);
 
         return this;
-    }
-
-    addOrbitControls() {
-        new OrbitControls(this.#camera, this.#renderer.domElement);
-    }
-
-    addCannonDebug() {
-        const cannonDebugger = new CannonDebugger(this, this.#world);
-        this.cannonDebugger = cannonDebugger;
     }
 
     #resizeToCanvasSize() {
