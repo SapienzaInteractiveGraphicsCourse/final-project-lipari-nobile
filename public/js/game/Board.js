@@ -1,9 +1,9 @@
 import * as THREE from '../vendor/three.module.min.js';
 
-import * as CANNON from 'cannon-es';
+import * as CANNON from '../vendor/cannon-es.js';
 import {
     TextGeometry
-} from 'three/addons/geometries/TextGeometry.js';
+} from '../vendor/TextGeometry.js';
 
 import {
     GameObject

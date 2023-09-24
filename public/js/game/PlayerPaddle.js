@@ -1,4 +1,4 @@
-import * as CANNON from 'cannon-es';
+import * as CANNON from '../vendor/cannon-es.js';
 import Key from '../utils/keyboard.js';
 import { Paddle } from './Paddle.js';
 
