@@ -386,6 +386,8 @@ function draw(globalContext) {
         scene
     } = globalContext;
 
+    document.getElementById('loading').style.display = 'none';
+
     scene.startAnimationLoop(() => {
         hoverButton(globalContext);
 
