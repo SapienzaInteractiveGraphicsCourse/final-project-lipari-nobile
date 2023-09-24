@@ -15,8 +15,6 @@ export async function loadFont(globalContext) {
 export async function loadAudioBuffer(globalContext, audioLink) {
     const audioBuffer = await new THREE.AudioLoader()
         .loadAsync(audioLink);
-    
-    //globalContext.audioBuffer = audioBuffer;
 
     const audioTitle = audioLink.split('/').pop().split('.')[0];
 

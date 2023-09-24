@@ -1,10 +1,6 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import {
-    CCDIKSolver,
-    CCDIKHelper
-} from 'three/addons/animation/CCDIKSolver.js';
-import {
     TextGeometry
 } from 'three/addons/geometries/TextGeometry.js';
 

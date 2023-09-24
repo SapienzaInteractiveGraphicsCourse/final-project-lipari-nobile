@@ -81,7 +81,6 @@ export class CustomScene extends THREE.Scene {
     }
 
     #resizeToCanvasSize() {
-        console.log('resize')
         const canvas = this.#renderer.domElement;
         const width = canvas.clientWidth;
         const height = canvas.clientHeight;

@@ -282,8 +282,6 @@ function onPointerDown(globalContext) {
         canvas,
     } = globalContext;
 
-    console.log('onPointerDown:');
-
     return (event) => {
         if (event.isPrimary === false) return;
 
@@ -298,8 +296,6 @@ function onPointerMove(globalContext) {
     const {
         canvas
     } = globalContext;
-
-    console.log('onPointerMove');
 
     return (event) => {
         if (event.isPrimary === false) return;
@@ -324,8 +320,6 @@ function onPointerUp(globalContext) {
         creditsOpen
     } = globalContext;
 
-    console.log('onPointerUp');
-
     return (event) => {
         if (event.isPrimary === false) return;
 
@@ -349,8 +343,6 @@ function onPointerUp(globalContext) {
 
                     // Close the GUI
                     gui.hide()
-
-                    console.log('start game')
                     break;
                 case 'options':
                     // Close the credits if it's open
